@@ -9,7 +9,7 @@ export class ApiError extends Error {
 
 const BASE = import.meta.env.VITE_API_URL ?? "";
 /** A scan that takes longer than this is treated as failed, so the app never waits forever. */
-export const ANALYZE_TIMEOUT_MS = 75_000;
+export const ANALYZE_TIMEOUT_MS = 90_000;
 const DEVICE_KEY = "bites.device";
 
 function deviceId(): string {

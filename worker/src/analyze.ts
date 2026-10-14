@@ -1,6 +1,6 @@
 import { dayKey, type AnalyzeRequest } from "@bites/shared";
 import { normalizeAiOutput, NormalizeError } from "./normalize";
-import { checkAndCount } from "./ratelimit";
+import { checkAndCount, refund } from "./ratelimit";
 import { dailyLimit, getPlan } from "./plan";
 import type { AiOutcome, callWorkersAi as CallWorkersAi } from "./workersai";
 import { MOCK_RESULT } from "./mock";
@@ -27,20 +27,30 @@ export async function handleAnalyze(req: Request, env: Env, deps: Deps): Promise
   const uid = await deps.verifyRequest(req, env);
   if (!uid) return json({ error: "unauthorized" }, 401);
   const plan = await getPlan(env.RATE_KV, uid);
-  if (!(await checkAndCount(env.RATE_KV, uid, dayKey(deps.now()), dailyLimit(plan, env))))
+  const day = dayKey(deps.now());
+  if (!(await checkAndCount(env.RATE_KV, uid, day, dailyLimit(plan, env))))
     return json({ error: "rate_limited", plan }, 429);
 
   if (env.MOCK_AI === "1") return json(MOCK_RESULT);
 
+  // The scan is counted up front so parallel requests cannot all slip under the limit, and given back
+  // when the person got no result for it (timeout, AI error, unreadable output).
+  const failed = async (res: Response) => {
+    await refund(env.RATE_KV, uid, day).catch((e) => console.error(e));
+    return res;
+  };
+
   let out: AiOutcome;
-  try { out = plan === "paid" ? await deps.callClaude(body, env) : await deps.callWorkersAi(body, env); } catch (e) { console.error(e); return json({ error: "upstream" }, 502); }
-  if (out.kind === "refusal") return json({ error: "refusal" }, 422);
-  if (out.kind === "truncated") return json({ error: "bad_output" }, 422);
+  try { out = plan === "paid" ? await deps.callClaude(body, env) : await deps.callWorkersAi(body, env); } catch (e) { console.error(e); return failed(json({ error: "upstream" }, 502)); }
+  if (out.kind === "refusal") return failed(json({ error: "refusal" }, 422));
+  if (out.kind === "truncated") return failed(json({ error: "bad_output" }, 422));
   try {
     const result = normalizeAiOutput(out.json);
+    // "Not food" is a real answer from the AI, so it still counts.
     return result.isFood ? json(result) : json({ error: "not_food", result }, 422);
   } catch (e) {
-    if (e instanceof NormalizeError) return json({ error: "bad_output" }, 422);
+    if (e instanceof NormalizeError) return failed(json({ error: "bad_output" }, 422));
+    await failed(json({}));
     throw e;
   }
 }

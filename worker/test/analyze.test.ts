@@ -141,4 +141,33 @@ describe("handleAnalyze", () => {
     const r = await handleAnalyze(post(ok), env, makeDeps());
     expect(r.status).toBe(200);
   });
+
+  describe("failed scans do not use up the daily limit", () => {
+    const freeOne = () => makeEnv({ FREE_DAILY_LIMIT: "1" }, "free");
+    const thenWorks = async (env: Env, failing: Partial<Deps>) => {
+      vi.spyOn(console, "error").mockImplementation(() => {});
+      const first = await handleAnalyze(post(ok), env, makeDeps(failing));
+      expect(first.status).not.toBe(200);
+      expect((await handleAnalyze(post(ok), env, makeDeps())).status).toBe(200);
+    };
+    it("after the AI throws or times out", () => thenWorks(freeOne(), { callWorkersAi: async () => { throw new Error("timed out"); } }));
+    it("after a refusal", () => thenWorks(freeOne(), { callWorkersAi: async () => ({ kind: "refusal" }) }));
+    it("after truncated output", () => thenWorks(freeOne(), { callWorkersAi: async () => ({ kind: "truncated" }) }));
+    it("after output that cannot be read", () => thenWorks(freeOne(), { callWorkersAi: async () => ({ kind: "ok", json: { foo: 1 } }) }));
+    it("on the paid plan too", () => thenWorks(makeEnv({ DAILY_LIMIT: "1" }), { callClaude: async () => { throw new Error("boom"); } }));
+
+    it("but a real answer, even not food, still counts", async () => {
+      const env = freeOne();
+      const notFood = makeDeps({ callWorkersAi: async () => ({ kind: "ok", json: { ...raw, is_food: false, items: [] } }) });
+      expect((await handleAnalyze(post(ok), env, notFood)).status).toBe(422);
+      expect((await handleAnalyze(post(ok), env, makeDeps())).status).toBe(429);
+    });
+    it("many failures in a row never block the person", async () => {
+      vi.spyOn(console, "error").mockImplementation(() => {});
+      const env = freeOne();
+      const broken = makeDeps({ callWorkersAi: async () => { throw new Error("x"); } });
+      for (let i = 0; i < 6; i++) expect((await handleAnalyze(post(ok), env, broken)).status).toBe(502);
+      expect((await handleAnalyze(post(ok), env, makeDeps())).status).toBe(200);
+    });
+  });
 });
