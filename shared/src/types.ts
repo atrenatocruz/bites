@@ -36,3 +36,13 @@ export interface AnalyzeResult {
   scaleReference: string | null; followUpQuestion: string | null; notes: string | null;
 }
 export type AnalyzeError = "not_food" | "refusal" | "bad_output" | "rate_limited" | "unauthorized" | "bad_request" | "upstream";
+/** One workout as sent by the Apple Health Shortcut. */
+export interface HealthWorkout { type: string; start: string; minutes: number; kcal: number | null }
+/** One day of Apple Health data. Energy is in kcal; null when Health had no samples. */
+export interface HealthDay { restingKcal: number | null; activeKcal: number | null; workouts: HealthWorkout[] }
+/** GET /api/activity response. */
+export interface ActivityResponse {
+  days: Record<string, HealthDay>;
+  lastSync: { syncedAt: number; tz: string } | null;
+  hasKey: boolean;
+}
