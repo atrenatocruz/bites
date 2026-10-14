@@ -74,6 +74,7 @@ export default function ItemEditor({ item, onGrams, onRemove }: ItemEditorProps)
               if (e.target.value !== "" && Number.isFinite(n) && n >= 0) onGrams(Math.min(MAX_GRAMS, n));
             }}
             onBlur={() => setDraft(null)}
+            onKeyDown={(e) => e.key === "Enter" && e.currentTarget.blur()}
             onFocus={(e) => e.target.select()}
           />
           <button type="button" className={stepButton} aria-label={`${label} +${STEP}`} onClick={() => step(STEP)}>

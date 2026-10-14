@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { useRef, type ReactNode } from "react";
 import { AnimatePresence, motion, useDragControls, useReducedMotion } from "framer-motion";
 import { useTranslation } from "react-i18next";
 
@@ -15,6 +15,7 @@ export default function Sheet({ open, onClose, children, snap = "auto" }: SheetP
   const { t } = useTranslation();
   const reduce = useReducedMotion();
   const controls = useDragControls();
+  const pressAt = useRef<{ x: number; y: number } | null>(null);
   return (
     <AnimatePresence>
       {open && (
@@ -45,7 +46,15 @@ export default function Sheet({ open, onClose, children, snap = "auto" }: SheetP
             }}
           >
             <div className="flex shrink-0 justify-center pb-2 pt-2.5">
-              <button type="button" onClick={onClose} onPointerDown={(e) => controls.start(e)} aria-label={t("common.close")} className="h-5 w-16 cursor-grab touch-none">
+              <button type="button" onClick={(e) => {
+                  const start = pressAt.current;
+                  pressAt.current = null;
+                  if (!start || Math.hypot(e.clientX - start.x, e.clientY - start.y) < 6) onClose();
+                }}
+                onPointerDown={(e) => {
+                  pressAt.current = { x: e.clientX, y: e.clientY };
+                  controls.start(e);
+                }} aria-label={t("common.close")} className="h-5 w-16 cursor-grab touch-none">
                 <span className="mx-auto mt-2 block h-1 w-9 rounded-full bg-sep" />
               </button>
             </div>

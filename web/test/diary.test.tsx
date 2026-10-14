@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import { render, screen, fireEvent, cleanup, within, configure } from "@testing-library/react";
+import { render, screen, fireEvent, cleanup, within, configure, act } from "@testing-library/react";
 import "../src/i18n";
 import i18n from "../src/i18n";
 import { dayKey, type Meal } from "@bites/shared";
@@ -98,5 +98,23 @@ describe("DiaryScreen", () => {
     expect(screen.getByText("Average / day")).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "Year" }));
     expect(screen.getByText("On target")).toBeTruthy();
+  });
+
+  it("advances today and the selected day at midnight rollover", async () => {
+    const real = new Date();
+    const evening = new Date(real.getFullYear(), real.getMonth(), real.getDate(), 23, 59, 0);
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(evening);
+    try {
+      useStore.setState({ selectedDay: dayKey(evening) });
+      render(<DiaryScreen />);
+      expect(screen.getByRole("heading", { level: 1 }).textContent).toBe("Today");
+      vi.setSystemTime(new Date(evening.getTime() + 2 * 60_000));
+      act(() => { document.dispatchEvent(new Event("visibilitychange")); });
+      expect(useStore.getState().selectedDay).toBe(dayKey(new Date(evening.getTime() + 2 * 60_000)));
+      expect(screen.getByRole("heading", { level: 1 }).textContent).toBe("Today");
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

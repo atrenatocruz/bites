@@ -3,11 +3,13 @@ import { callClaude } from "./claude";
 import { verifyRequest } from "./auth";
 import type { Env } from "./env";
 
+const LOCAL_ORIGIN = /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/;
+
 function corsHeaders(req: Request, env: Env): Record<string, string> {
   const origin = req.headers.get("origin");
   if (!origin) return {};
   const allowed = (env.ALLOWED_ORIGINS ?? "").split(",").map((s) => s.trim()).filter(Boolean);
-  if (!allowed.includes(origin) && !origin.startsWith("http://localhost")) return {};
+  if (!allowed.includes(origin) && !LOCAL_ORIGIN.test(origin)) return {};
   return {
     "access-control-allow-origin": origin,
     "access-control-allow-headers": "content-type, authorization, x-device-id",

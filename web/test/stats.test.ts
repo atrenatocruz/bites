@@ -15,6 +15,13 @@ describe("stats", () => {
     expect(dayStatus(2201, 2000)).toBe("over");
   });
 
+  it("avoids float errors at the 110% boundary", () => {
+    expect(dayStatus(2310, 2100)).toBe("good");
+    expect(dayStatus(2311, 2100)).toBe("over");
+    expect(dayStatus(1890, 2100)).toBe("good");
+    expect(dayStatus(1889, 2100)).toBe("under");
+  });
+
   it("counts the current streak across a month boundary", () => {
     expect(currentStreak(map("2026-09-29", "2026-09-30", "2026-10-01", "2026-10-02"), "2026-10-02")).toBe(4);
   });

@@ -3,6 +3,7 @@ import { format } from "date-fns";
 import { ImageIcon, Pencil, X } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import type { AnalyzeRequest, AnalyzeResult } from "@bites/shared";
+import { toast } from "../../components/Toast";
 import PillButton from "../../components/PillButton";
 import { useStore } from "../../store";
 import { resolveLocale } from "../../i18n";
@@ -88,6 +89,10 @@ export default function ScanScreen() {
   const capturePhoto = async () => {
     const video = videoRef.current;
     if (phase !== "live" || status !== "ready" || !video) return;
+    if (!navigator.onLine) {
+      toast(t("errors.offline"));
+      return;
+    }
     navigator.vibrate?.(10);
     captureRef.current = {};
     video.pause();
@@ -105,6 +110,10 @@ export default function ScanScreen() {
 
   const pickFile = async (file: File | undefined) => {
     if (!file) return;
+    if (!navigator.onLine) {
+      toast(t("errors.offline"));
+      return;
+    }
     captureRef.current = {};
     videoRef.current?.pause();
     setSource("photo");

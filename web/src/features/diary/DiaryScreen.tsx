@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { format, startOfWeek } from "date-fns";
 import { ChevronDown, Settings } from "lucide-react";
@@ -6,10 +6,11 @@ import { useTranslation } from "react-i18next";
 import { enUS, pt } from "date-fns/locale";
 import { dayKey, macroTargets, type DaySummary, type Meal, type MealType } from "@bites/shared";
 import MealRow from "../../components/MealRow";
-import { toast } from "../../components/Toast";
 import { useStore } from "../../store";
+import { useToday } from "../../lib/useToday";
 import { currentStreak, energyUnit, formatEnergy, parseKey, shiftKey } from "../../lib/stats";
 import MealDetailSheet from "../history/MealDetailSheet";
+import { useRemoveMeal } from "../history/useRemoveMeal";
 import DayCard from "./DayCard";
 import MonthCalendar from "./MonthCalendar";
 import Trends from "./Trends";
@@ -32,7 +33,9 @@ export default function DiaryScreen({ onOpenSettings }: DiaryScreenProps) {
   const selectedDay = useStore((s) => s.selectedDay);
   const setSelectedDay = useStore((s) => s.setSelectedDay);
 
-  const todayKey = dayKey(new Date());
+  const todayKey = useToday((previous, next) => {
+    if (useStore.getState().selectedDay === previous) useStore.getState().setSelectedDay(next);
+  });
   const [weekStart, setWeekStart] = useState(() => mondayOf(selectedDay));
   const [month, setMonth] = useState(() => firstOfMonth(selectedDay));
   const [calendarOpen, setCalendarOpen] = useState(false);
@@ -85,23 +88,7 @@ export default function DiaryScreen({ onOpenSettings }: DiaryScreenProps) {
     setCalendarOpen(false);
   };
 
-  const remove = async (meal: Meal) => {
-    const { id, ...data } = meal;
-    setDetailOpen(false);
-    try {
-      await repo.deleteMeal(id);
-    } catch {
-      toast(t("errors.generic"));
-      return;
-    }
-    useStore.getState().bump();
-    toast(t("history.deleted"), {
-      label: t("common.undo"),
-      onClick: () => {
-        void repo.addMeal(data).then(() => useStore.getState().bump());
-      },
-    });
-  };
+  const remove = useRemoveMeal(useCallback(() => setDetailOpen(false), []));
 
   return (
     <div className="mx-auto w-full max-w-xl self-start pb-10">

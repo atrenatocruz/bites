@@ -7,9 +7,10 @@ import { format } from "date-fns";
 import { dayKey, type Meal } from "@bites/shared";
 import MealRow from "../../components/MealRow";
 import Logo from "../../components/Logo";
-import { toast } from "../../components/Toast";
 import { useStore } from "../../store";
 import MealDetailSheet from "./MealDetailSheet";
+import { useRemoveMeal } from "./useRemoveMeal";
+import { energyUnit, formatEnergy } from "../../lib/stats";
 
 const PAGE = 50;
 
@@ -52,6 +53,7 @@ function SwipeRow({ meal, onOpen, onDelete }: { meal: Meal; onOpen: () => void; 
 export default function HistoryScreen() {
   const { t, i18n } = useTranslation();
   const repo = useStore((s) => s.repo);
+  const units = useStore((s) => s.profile?.units ?? "kcal");
   const dataVersion = useStore((s) => s.dataVersion);
   const [meals, setMeals] = useState<Meal[]>([]);
   const [loaded, setLoaded] = useState(false);
@@ -107,6 +109,20 @@ export default function HistoryScreen() {
     return () => io.disconnect();
   }, [hasMore, loadMore, meals.length]);
 
+  const dayKeys = useMemo(() => [...new Set(meals.map((m) => m.dayKey))].sort(), [meals]);
+  const firstDay = dayKeys[0];
+  const lastDay = dayKeys[dayKeys.length - 1];
+  const [dayTotals, setDayTotals] = useState<Map<string, number>>(new Map());
+
+  useEffect(() => {
+    if (!firstDay || !lastDay) return;
+    let live = true;
+    void repo.daysInRange(firstDay, lastDay).then((list) => live && setDayTotals(new Map(list.map((d) => [d.dayKey, d.kcal]))));
+    return () => {
+      live = false;
+    };
+  }, [repo, dataVersion, firstDay, lastDay]);
+
   const visible = useMemo(() => (q ? meals.filter((m) => matches(m, q)) : meals), [meals, q]);
   const groups = useMemo(() => {
     const map = new Map<string, Meal[]>();
@@ -131,23 +147,7 @@ export default function HistoryScreen() {
     setDetailOpen(true);
   };
 
-  const remove = async (meal: Meal) => {
-    const { id, ...data } = meal;
-    setDetailOpen(false);
-    try {
-      await repo.deleteMeal(id);
-    } catch {
-      toast(t("errors.generic"));
-      return;
-    }
-    useStore.getState().bump();
-    toast(t("history.deleted"), {
-      label: t("common.undo"),
-      onClick: () => {
-        void repo.addMeal(data).then(() => useStore.getState().bump());
-      },
-    });
-  };
+  const remove = useRemoveMeal(useCallback(() => setDetailOpen(false), []));
 
   return (
     <div className="mx-auto w-full max-w-xl self-start pb-8">
@@ -179,7 +179,7 @@ export default function HistoryScreen() {
           <h2 className="flex items-baseline justify-between pb-1 text-subhead font-semibold">
             <span>{dayLabel(key)}</span>
             <span className="text-caption tabular">
-              <span>{Math.round(list.reduce((s, m) => s + m.totals.kcal, 0))}</span> {t("common.kcal")}
+              <span>{formatEnergy(dayTotals.get(key) ?? list.reduce((s, m) => s + m.totals.kcal, 0), units)}</span> {energyUnit(units)}
             </span>
           </h2>
           <ul>

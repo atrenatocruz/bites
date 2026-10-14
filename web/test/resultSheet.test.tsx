@@ -127,6 +127,18 @@ describe("ResultSheet", () => {
     expect(screen.getByTestId("hero-kcal").textContent).toBe("300");
   });
 
+  it("snaps the displayed grams to the clamp on blur and on Enter", () => {
+    setup();
+    const input = screen.getAllByRole("spinbutton")[0]!;
+    fireEvent.change(input, { target: { value: "99999" } });
+    fireEvent.blur(input);
+    expect(screen.getAllByRole("spinbutton")[0]).toHaveProperty("value", "5000");
+    input.focus();
+    fireEvent.change(input, { target: { value: "88888" } });
+    fireEvent.keyDown(input, { key: "Enter" });
+    expect(screen.getAllByRole("spinbutton")[0]).toHaveProperty("value", "5000");
+  });
+
   it("disables Save when the total is 0 kcal", () => {
     setup();
     fireEvent.change(screen.getAllByRole("spinbutton")[0]!, { target: { value: "0" } });

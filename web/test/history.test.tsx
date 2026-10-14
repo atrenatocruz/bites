@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { render, screen, fireEvent, waitFor, cleanup, within } from "@testing-library/react";
 import "../src/i18n";
 import i18n from "../src/i18n";
@@ -65,6 +65,33 @@ describe("HistoryScreen", () => {
     expect(screen.getByText("PÃ£o com queijo")).toBeTruthy();
     fireEvent.change(search, { target: { value: "zzz" } });
     expect(screen.getByText("No meals match your search.")).toBeTruthy();
+  });
+
+  it("keeps the true day total while a search filters the list", async () => {
+    await setup();
+    fireEvent.change(screen.getByPlaceholderText("Search meals"), { target: { value: "porridge" } });
+    const today = screen.getByRole("heading", { name: /^Today/ });
+    await waitFor(() => expect(within(today).getByText("500")).toBeTruthy());
+    expect(screen.queryByText("Pão com queijo")).toBeNull();
+  });
+
+  it("ignores a second delete of the same meal while the first is in flight", async () => {
+    await setup();
+    let release!: () => void;
+    const gate = new Promise<void>((r) => { release = r; });
+    const real = repo.deleteMeal.bind(repo);
+    const spy = vi.spyOn(repo, "deleteMeal").mockImplementation(async (id) => { await gate; return real(id); });
+    fireEvent.click(screen.getByText("Salad"));
+    const del = await screen.findByRole("button", { name: "Delete meal" });
+    fireEvent.click(del);
+    fireEvent.click(del);
+    release();
+    await waitFor(() => expect(screen.queryByText("Salad")).toBeNull());
+    expect(spy).toHaveBeenCalledTimes(1);
+    expect(screen.getAllByRole("button", { name: "Undo" })).toHaveLength(1);
+    fireEvent.click(screen.getByRole("button", { name: "Undo" }));
+    await screen.findByText("Salad");
+    expect((await repo.listMeals()).filter((m) => m.title === "Salad")).toHaveLength(1);
   });
 
   it("deletes a meal and restores it with Undo", async () => {

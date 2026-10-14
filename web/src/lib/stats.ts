@@ -14,8 +14,8 @@ export function shiftKey(key: string, days: number): string {
 
 export function dayStatus(kcal: number | undefined, target: number): DayStatus {
   if (!kcal || kcal <= 0) return "empty";
-  if (kcal < target * 0.9) return "under";
-  if (kcal > target * 1.1) return "over";
+  if (kcal * 10 < target * 9) return "under";
+  if (kcal * 10 > target * 11) return "over";
   return "good";
 }
 

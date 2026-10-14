@@ -1,5 +1,5 @@
-import { describe, it, expect, beforeEach } from "vitest";
-import { render, screen, fireEvent, act } from "@testing-library/react";
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { render, screen, fireEvent, act, cleanup } from "@testing-library/react";
 import "../src/i18n";
 import type { Meal } from "@bites/shared";
 import Ring from "../src/components/Ring";
@@ -9,6 +9,8 @@ import MealRow from "../src/components/MealRow";
 import Sheet from "../src/components/Sheet";
 import { Toaster, toast } from "../src/components/Toast";
 import { useStore } from "../src/store";
+
+afterEach(cleanup);
 
 const arcOf = (c: HTMLElement) => c.querySelector("circle[data-arc]") as SVGCircleElement;
 
@@ -41,6 +43,18 @@ describe("Sheet", () => {
     render(<Sheet open onClose={() => { closed = true; }}><p>Hello</p></Sheet>);
     expect(screen.getByText("Hello")).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: /close/i }));
+    expect(closed).toBe(true);
+  });
+
+  it("does not close when a drag ends on the handle", () => {
+    let closed = false;
+    render(<Sheet open onClose={() => { closed = true; }}><p>Hello</p></Sheet>);
+    const handle = screen.getByRole("button", { name: /close/i });
+    fireEvent.pointerDown(handle, { clientX: 100, clientY: 100 });
+    fireEvent.click(handle, { clientX: 100, clientY: 150 });
+    expect(closed).toBe(false);
+    fireEvent.pointerDown(handle, { clientX: 100, clientY: 100 });
+    fireEvent.click(handle, { clientX: 101, clientY: 101 });
     expect(closed).toBe(true);
   });
 });
@@ -81,5 +95,17 @@ describe("MealRow", () => {
     expect(screen.getByText("Oats")).toBeTruthy();
     expect(screen.getByText(/320/)).toBeTruthy();
     expect(screen.getByText(/07:05/)).toBeTruthy();
+  });
+
+  it("shows kJ when the profile uses kj", () => {
+    const meal: Meal = {
+      id: "1", createdAt: 0, dayKey: "2026-01-05", mealType: "breakfast", title: "Oats", thumb: null, items: [],
+      totals: { kcal: 100, protein: 1, carbs: 1, fat: 1 }, source: "text", edited: false,
+    };
+    useStore.setState({ profile: { units: "kj" } as never });
+    render(<MealRow meal={meal} onClick={() => {}} />);
+    expect(screen.getByText("418")).toBeTruthy();
+    expect(screen.getByText("kJ")).toBeTruthy();
+    useStore.setState({ profile: null });
   });
 });

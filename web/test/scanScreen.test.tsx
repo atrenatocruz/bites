@@ -3,6 +3,7 @@ import { render, screen, cleanup, waitFor, fireEvent } from "@testing-library/re
 import "../src/i18n";
 import ScanScreen from "../src/features/scan/ScanScreen";
 import * as api from "../src/lib/api";
+import { Toaster } from "../src/components/Toast";
 import { useStore } from "../src/store";
 
 function mockCamera(impl: (() => Promise<MediaStream>) | undefined) {
@@ -60,5 +61,16 @@ describe("ScanScreen camera states", () => {
     document.dispatchEvent(new Event("visibilitychange"));
     expect(stop).toHaveBeenCalled();
     Object.defineProperty(document, "hidden", { value: false, configurable: true });
+  });
+
+  it("does not call the API from the shutter while offline", async () => {
+    mockCamera(async () => ({ getTracks: () => [{ stop: vi.fn() }] }) as unknown as MediaStream);
+    vi.spyOn(HTMLMediaElement.prototype, "play").mockResolvedValue();
+    const analyze = vi.spyOn(api, "analyze");
+    vi.spyOn(navigator, "onLine", "get").mockReturnValue(false);
+    render(<><ScanScreen /><Toaster /></>);
+    fireEvent.click(await screen.findByRole("button", { name: "Take photo" }));
+    expect(await screen.findByText(/scanning needs internet/)).toBeTruthy();
+    expect(analyze).not.toHaveBeenCalled();
   });
 });

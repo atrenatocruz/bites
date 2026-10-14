@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import PillButton from "./components/PillButton";
 import { applyProfileLocale } from "./i18n";
 import { useStore } from "./store";
+import OfflineBanner from "./components/OfflineBanner";
 import TabBar from "./components/TabBar";
 import { Toaster } from "./components/Toast";
 import ScanScreen from "./features/scan/ScanScreen";
@@ -71,6 +72,7 @@ function Shell() {
 
   return (
     <div className="flex h-full flex-col bg-bg text-fg">
+      <OfflineBanner />
       <main className="relative min-h-0 flex-1 overflow-hidden">
         <AnimatePresence mode="wait" initial={false}>
           <motion.section
