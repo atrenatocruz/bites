@@ -56,7 +56,8 @@ export async function fetchActivity(from: string, to: string, token: string | nu
 /** Burned (Health resting + active) minus eaten. Null when the day has no Health energy at all. */
 export function deficitFor(day: HealthDay | undefined, eatenKcal: number, profile: BodyProfile | null, year: number): Deficit | null {
   if (!day || (day.restingKcal === null && day.activeKcal === null)) return null;
-  let resting = day.restingKcal;
+  // Health sums to 0 when nothing was measured (no Apple Watch), so 0 resting energy means unknown.
+  let resting = day.restingKcal && day.restingKcal > 0 ? day.restingKcal : null;
   let estimated = false;
   if (resting === null) {
     if (!profile) return null;
@@ -89,6 +90,15 @@ export function periodActivity(days: Record<string, HealthDay>, summaries: DaySu
 }
 
 export const isStale = (lastSync: ActivityResponse["lastSync"], now: number) => !lastSync || now - lastSync.syncedAt > STALE_MS;
+
+/** Forget the cached Health data, e.g. when the person deletes everything or signs out. */
+export function clearActivityCache(): void {
+  try {
+    localStorage.removeItem(CACHE_KEY);
+  } catch {
+    // Nothing cached, or storage blocked.
+  }
+}
 
 function readCache(): ActivityResponse | null {
   try {

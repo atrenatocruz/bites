@@ -24,6 +24,9 @@ describe("deficitFor", () => {
     const expected = Math.round(bmr("male", 80, 180, 30) + 300);
     expect(deficitFor(hd(null, 300), 0, body, 2026)).toEqual({ burned: expected, eaten: 0, deficit: expected, estimated: true });
   });
+  it("treats zero resting energy as not measured", () => {
+    expect(deficitFor(hd(0, 300), 0, body, 2026)?.estimated).toBe(true);
+  });
   it("treats missing active energy as zero", () => {
     expect(deficitFor(hd(1700, null), 1000, body, 2026)?.burned).toBe(1700);
   });

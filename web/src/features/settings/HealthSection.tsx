@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { format } from "date-fns";
+import { enUS, pt } from "date-fns/locale";
 import { useTranslation } from "react-i18next";
 import { dayKey } from "@bites/shared";
 import { toast } from "../../components/Toast";
@@ -30,7 +31,7 @@ function copyPending(key: Promise<string | null>): Promise<boolean> {
 }
 
 export default function HealthSection() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const repo = useStore((s) => s.repo);
   const [status, setStatus] = useState<{ hasKey: boolean; syncedAt: number | null } | null>(null);
   const [copy, setCopy] = useState<Copy>({ state: "idle" });
@@ -99,7 +100,7 @@ export default function HealthSection() {
         ) : (
           <>
             {connected ? (
-              <p className="px-4 py-3 text-subhead">{t("settings.health.lastSync", { when: format(status!.syncedAt!, "d MMM, HH:mm") })}</p>
+              <p className="px-4 py-3 text-subhead">{t("settings.health.lastSync", { when: format(status!.syncedAt!, "d MMM, HH:mm", { locale: i18n.language.startsWith("pt") ? pt : enUS }) })}</p>
             ) : (
               <p className="px-4 py-3 text-subhead text-fg-2">{t("settings.health.intro")}</p>
             )}

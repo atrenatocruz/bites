@@ -18,8 +18,8 @@ Name the Shortcut exactly **Bites Health**. The app runs it with `shortcuts://ru
 ```
 
 - One entry per day, for today and the 6 days before (7 in total; the API accepts up to 8).
-- Numbers may be text and may use a decimal comma; the API rounds them.
-- A day with no samples can send `0` or leave the value empty.
+- Set every number field in the Dictionary actions to the **Number** type. The API also reads text like `412,5` or `1,712`, but Number avoids surprises.
+- A day with no samples can send `0` or leave the value empty. Bites treats 0 resting energy as "not measured" (no Apple Watch) and estimates it from the profile, and it never replaces a day it already has with an empty one, so a run while the phone is locked does no harm.
 
 ## Actions, in order
 
@@ -29,8 +29,8 @@ Name the Shortcut exactly **Bites Health**. The app runs it with `shortcuts://ru
    2. **Adjust Date**: `Current Date`, Subtract `Back` days. Then **Adjust Date**: Get Start of Day → **Set Variable** `DayStart`.
    3. **Adjust Date**: `DayStart`, Add `1` day → **Set Variable** `DayEnd`.
    4. **Format Date** `DayStart`, Date Format Custom `yyyy-MM-dd` → **Set Variable** `DayKey`.
-   5. **Find Health Samples** where Type is **Active Energy** and Start Date is between `DayStart` and `DayEnd`. Then **Calculate Statistics**: Sum → **Set Variable** `Active`.
-   6. **Find Health Samples** where Type is **Resting Energy**, same dates. **Calculate Statistics**: Sum → **Set Variable** `Resting`.
+   5. **Find Health Samples** where Type is **Active Energy** and Start Date is between `DayStart` and `DayEnd`, with **Group By: Day** turned on. Grouping makes Health return the day's total with overlapping sources (Watch plus iPhone, or a workout app that also writes energy) counted once, like the Health app does. Summing the raw samples instead can count the same energy twice. If the result is a list, take the first item. **Set Variable** `Active`.
+   6. Same for Type **Resting Energy** → **Set Variable** `Resting`.
    7. **Find Health Samples** where Type is **Workouts**, same dates. Then **Repeat with Each** item:
       - **Get Details of Health Sample** → Type. **Set Variable** `WType`.
       - **Get Details of Health Sample** → Start Date, then **Format Date** ISO 8601 (include time). **Set Variable** `WStart`.
@@ -43,7 +43,7 @@ Name the Shortcut exactly **Bites Health**. The app runs it with `shortcuts://ru
 4. **Get Contents of URL** `https://bites-api.wellbites.workers.dev/api/activity/sync`:
    - Method **POST**, Request Body **JSON**, using the dictionary from step 3.
    - Header `Authorization` = `Bearer ` followed by the `Key` variable (one space after Bearer).
-5. **Get Dictionary Value** `message` from the result. **If** it has any value: **Show Notification** "Bites: " + `message`. **Otherwise**: **Show Notification** "Bites: synced ✓".
+5. **Get Dictionary Value** `ok` from the result. **If** it is `1`/true: **Show Notification** "Bites: synced ✓". **Otherwise**: **Get Dictionary Value** `message` from the result and **Show Notification** "Bites: " + `message` (every error from the API carries a readable message; if there is none, the server could not be reached, so show "Bites: couldn't sync, try again later").
 
 If **Workouts** is not offered as a Health sample type on your iOS version, skip step 2.7 and leave `workouts` as an empty list. Bites then shows energy and the deficit, with "No workouts".
 
@@ -60,4 +60,4 @@ The developer gives you a preview build of Bites. In it, open Settings → Apple
 
 ## Checking the numbers
 
-Compare a past day in Bites (Diary → Activity → Burned) with the Health app (Activity energy + Resting energy for that day). They should match to within rounding.
+Compare a past day in Bites (Diary → Activity → Burned) with the Health app (Active Energy + Resting Energy for that day). They should match to within rounding. If Bites shows clearly more, the energy is being summed per sample instead of grouped by day (step 2.5).

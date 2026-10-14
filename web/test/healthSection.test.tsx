@@ -99,6 +99,14 @@ describe("HealthSection", () => {
     expect(screen.queryByRole("button", { name: "Set up nightly sync" })).toBeNull();
   });
 
+  it("writes the last sync date in Portuguese for pt-PT", async () => {
+    ios();
+    await i18n.changeLanguage("pt-PT");
+    vi.stubGlobal("fetch", vi.fn(async () => answer({ days: {}, lastSync: { syncedAt: new Date(2026, 9, 14, 23, 0).getTime(), tz: "UTC" }, hasKey: true })));
+    render(<HealthSection />);
+    expect(await screen.findByText("Última sincronização 14 out, 23:00")).toBeTruthy();
+  });
+
   it("hides Connect until the Shortcut link is configured", async () => {
     ios();
     vi.stubEnv("VITE_HEALTH_SHORTCUT_URL", "");

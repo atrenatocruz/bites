@@ -98,6 +98,51 @@ describe("SettingsSheet", () => {
     }
   });
 
+  it("keeps everything when a signed-in account's Health data can't be deleted", async () => {
+    const fetchMock = vi.fn(async () => new Response("{}", { status: 503 }));
+    vi.stubGlobal("fetch", fetchMock);
+    const firebaseLike = Object.assign(Object.create(repo), { kind: "firebase" as const, currentUser: async () => ({ uid: "u1", email: "a@b.c", name: null }) });
+    useStore.setState({ repo: firebaseLike });
+    try {
+      renderSheet();
+      fireEvent.click(screen.getByRole("button", { name: "Delete all data" }));
+      const dialog = (await screen.findByText("Delete everything?")).closest("[role=dialog]") as HTMLElement;
+      fireEvent.click(within(dialog).getByRole("button", { name: "Delete all" }));
+      await waitFor(() => expect(fetchMock).toHaveBeenCalled());
+      await new Promise((r) => setTimeout(r, 50));
+      expect(screen.getByText("Delete everything?")).toBeTruthy();
+      expect(useStore.getState().profile).not.toBeNull();
+      expect(await repo.getProfile()).not.toBeNull();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it("forgets the cached Health data on delete all and on sign-out", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => new Response(JSON.stringify({ ok: true }), { status: 200 })));
+    try {
+      localStorage.setItem("bites.activity", "{}");
+      renderSheet();
+      fireEvent.click(screen.getByRole("button", { name: "Delete all data" }));
+      const dialog = (await screen.findByText("Delete everything?")).closest("[role=dialog]") as HTMLElement;
+      fireEvent.click(within(dialog).getByRole("button", { name: "Delete all" }));
+      await waitFor(() => expect(useStore.getState().profile).toBeNull());
+      expect(localStorage.getItem("bites.activity")).toBeNull();
+      cleanup();
+
+      localStorage.setItem("bites.activity", "{}");
+      await repo.saveProfile(base);
+      useStore.setState({ profile: base, repo: Object.assign(Object.create(repo), { kind: "firebase" as const, currentUser: async () => ({ uid: "u1", email: "a@b.c", name: "Ana" }), signOut: async () => {} }) });
+      renderSheet();
+      fireEvent.click(await screen.findByRole("button", { name: "Sign out" }));
+      await waitFor(() => expect(useStore.getState().profile).toBeNull());
+      expect(localStorage.getItem("bites.activity")).toBeNull();
+    } finally {
+      vi.unstubAllGlobals();
+      localStorage.clear();
+    }
+  });
+
   it("shows the Google account and signs out back to onboarding", async () => {
     const signOut = vi.fn(async () => {});
     useStore.setState({

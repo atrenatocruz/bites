@@ -6,7 +6,7 @@ import PillButton from "../../components/PillButton";
 import Sheet from "../../components/Sheet";
 import { toast } from "../../components/Toast";
 import { applyProfileLocale } from "../../i18n";
-import { deleteAllActivity } from "../../lib/activity";
+import { clearActivityCache, deleteAllActivity } from "../../lib/activity";
 import { getPlan, redeemCode, setPlan as switchPlan } from "../../lib/api";
 import { selectAllOnFocus } from "../../lib/keyboard";
 import { download, toCSV, toJSON } from "../../lib/export";
@@ -190,9 +190,11 @@ export default function SettingsSheet({ open, onClose, onRedo }: SettingsSheetPr
 
   const deleteAll = async () => {
     try {
+      // The Health data and the Shortcut key live on the server: delete them first, so a failure leaves everything as it was.
+      const healthDeleted = await deleteAllActivity(await repo.getIdToken().catch(() => null));
+      if (!healthDeleted && repo.kind !== "local") throw new Error("Apple Health data not deleted");
       await repo.clearAll();
-      // Best effort: the Health data lives on the server and must not block local deletion.
-      void repo.getIdToken().catch(() => null).then((token) => deleteAllActivity(token));
+      clearActivityCache();
     } catch {
       toast(t("errors.generic"));
       return;
@@ -208,6 +210,7 @@ export default function SettingsSheet({ open, onClose, onRedo }: SettingsSheetPr
   const signOut = async () => {
     try {
       await repo.signOut?.();
+      clearActivityCache();
     } catch {
       toast(t("errors.generic"));
       return;
