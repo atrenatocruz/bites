@@ -13,6 +13,7 @@
       "three": { "title": "O teu dia num relance.", "body": "Um calendário que mostra como estás a correr." }
     },
     "illustration": { "rice": "Arroz 150 g · 195 kcal", "chicken": "Frango 120 g · 198 kcal" },
+    "page": "Página {{current}} de {{total}}",
     "step": "Pergunta {{current}} de {{total}}",
     "goal": {
       "title": "Qual é o teu objetivo?",
@@ -111,6 +112,7 @@
     }
   },
   "settings": {
+    "increase": "Aumentar {{name}}", "decrease": "Diminuir {{name}}",
     "title": "Definições",
     "target": "Objetivo diário",
     "macros": "Macros",

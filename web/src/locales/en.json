@@ -13,6 +13,7 @@
       "three": { "title": "Your day at a glance.", "body": "A calendar that shows how you're doing." }
     },
     "illustration": { "rice": "Rice 150 g · 195 kcal", "chicken": "Chicken 120 g · 198 kcal" },
+    "page": "Page {{current}} of {{total}}",
     "step": "Question {{current}} of {{total}}",
     "goal": {
       "title": "What's your goal?",
@@ -111,6 +112,7 @@
     }
   },
   "settings": {
+    "increase": "Increase {{name}}", "decrease": "Decrease {{name}}",
     "title": "Settings",
     "target": "Daily target",
     "macros": "Macros",

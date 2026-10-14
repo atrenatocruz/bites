@@ -1,5 +1,7 @@
 import type { DaySummary, Meal, Profile } from "@bites/shared";
 
+export interface AccountInfo { anonymous: boolean; email: string | null }
+
 export interface Repo {
   kind: "local" | "firebase";
   getProfile(): Promise<Profile | null>;
@@ -14,4 +16,7 @@ export interface Repo {
   exportAll(): Promise<{ profile: Profile | null; meals: Meal[] }>;
   clearAll(): Promise<void>;
   getIdToken(): Promise<string | null>;
+  getAccount?(): Promise<AccountInfo>;
+  signInWithGoogle?(): Promise<void>;
+  signOut?(): Promise<void>;
 }
