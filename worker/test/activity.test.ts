@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { handleCreateKey, handleDeleteKey, handleSync } from "../src/activity";
+import { handleCreateKey, handleDeleteActivity, handleDeleteKey, handleGetActivity, handleSync, monthsBetween } from "../src/activity";
 import { sha256Hex } from "../src/redeem";
 import type { Env } from "../src/env";
 import { memKv } from "./memkv";
@@ -138,5 +138,54 @@ describe("sync", () => {
     const { sync } = await connect();
     for (let i = 0; i < 30; i++) expect((await sync({ days: [day("2026-10-14")] })).status).toBe(200);
     expect((await sync({ days: [day("2026-10-14")] })).status).toBe(429);
+  });
+});
+
+describe("read and delete", () => {
+  const seed = (store: Map<string, string>) => {
+    store.set("activity:u1:2026-09", JSON.stringify({ days: { "2026-09-29": { restingKcal: 1, activeKcal: 2, workouts: [] }, "2026-09-30": { restingKcal: 3, activeKcal: 4, workouts: [] } } }));
+    store.set("activity:u1:2026-10", JSON.stringify({ days: { "2026-10-01": { restingKcal: 5, activeKcal: 6, workouts: [] } } }));
+    store.set("activity:u1:last", JSON.stringify({ syncedAt: 123, tz: "UTC" }));
+    store.set("activity:u2:2026-10", JSON.stringify({ days: { "2026-10-01": { restingKcal: 9, activeKcal: 9, workouts: [] } } }));
+  };
+
+  it("lists months between two days", () => {
+    expect(monthsBetween("2025-11-15", "2026-02-01")).toEqual(["2025-11", "2025-12", "2026-01", "2026-02"]);
+  });
+
+  it("returns the days in range, the last sync and whether a key exists", async () => {
+    const { store, env, deps } = setup();
+    seed(store);
+    store.set("actkeyof:u1", "h");
+    const res = await handleGetActivity(req("/api/activity?from=2026-09-30&to=2026-10-31"), env, deps);
+    expect(await res.json()).toEqual({
+      days: { "2026-09-30": { restingKcal: 3, activeKcal: 4, workouts: [] }, "2026-10-01": { restingKcal: 5, activeKcal: 6, workouts: [] } },
+      lastSync: { syncedAt: 123, tz: "UTC" },
+      hasKey: true,
+    });
+  });
+
+  it("answers empty for someone who never connected", async () => {
+    const { env, deps } = setup();
+    expect(await (await handleGetActivity(req("/api/activity?from=2026-10-01&to=2026-10-31"), env, deps)).json()).toEqual({ days: {}, lastSync: null, hasKey: false });
+  });
+
+  it("validates the range and requires login", async () => {
+    const { env, deps } = setup();
+    expect((await handleGetActivity(req("/api/activity?from=2026-10-31&to=2026-10-01"), env, deps)).status).toBe(400);
+    expect((await handleGetActivity(req("/api/activity?from=2024-01-01&to=2026-10-31"), env, deps)).status).toBe(400);
+    expect((await handleGetActivity(req("/api/activity?from=x&to=2026-10-31"), env, deps)).status).toBe(400);
+    expect((await handleGetActivity(req("/api/activity?from=2025-01-01&to=2026-12-31"), env, deps)).status).toBe(200); // the Diary's two-year range
+    const anon = setup(null);
+    expect((await handleGetActivity(req("/api/activity?from=2026-10-01&to=2026-10-31"), anon.env, anon.deps)).status).toBe(401);
+  });
+
+  it("deletes the key and all of that person's activity, and nobody else's", async () => {
+    const { store, env, deps } = setup();
+    seed(store);
+    await handleCreateKey(req("/api/activity/key", { method: "POST" }), env, deps);
+    const res = await handleDeleteActivity(req("/api/activity", { method: "DELETE" }), env, deps);
+    expect(res.status).toBe(200);
+    expect([...store.keys()].sort()).toEqual(["activity:u2:2026-10"]);
   });
 });

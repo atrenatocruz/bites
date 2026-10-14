@@ -1,3 +1,4 @@
+import { handleCreateKey, handleDeleteActivity, handleDeleteKey, handleGetActivity, handleSync } from "./activity";
 import { handleAnalyze } from "./analyze";
 import { callClaude } from "./claude";
 import { callWorkersAi } from "./workersai";
@@ -15,7 +16,7 @@ function corsHeaders(req: Request, env: Env): Record<string, string> {
   return {
     "access-control-allow-origin": origin,
     "access-control-allow-headers": "content-type, authorization, x-device-id",
-    "access-control-allow-methods": "GET, POST, OPTIONS",
+    "access-control-allow-methods": "GET, POST, DELETE, OPTIONS",
     "access-control-max-age": "86400",
     vary: "Origin",
   };
@@ -31,6 +32,11 @@ async function route(req: Request, env: Env): Promise<Response> {
   if (req.method === "GET" && pathname === "/api/plan") return handlePlan(req, env, planDeps);
   if (req.method === "POST" && pathname === "/api/plan") return handleSetPlan(req, env, planDeps);
   if (req.method === "POST" && pathname === "/api/redeem") return handleRedeem(req, env, planDeps);
+  if (req.method === "POST" && pathname === "/api/activity/sync") return handleSync(req, env, planDeps);
+  if (req.method === "POST" && pathname === "/api/activity/key") return handleCreateKey(req, env, planDeps);
+  if (req.method === "DELETE" && pathname === "/api/activity/key") return handleDeleteKey(req, env, planDeps);
+  if (req.method === "GET" && pathname === "/api/activity") return handleGetActivity(req, env, planDeps);
+  if (req.method === "DELETE" && pathname === "/api/activity") return handleDeleteActivity(req, env, planDeps);
   return Response.json({ error: "not_found" }, { status: 404 });
 }
 

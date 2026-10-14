@@ -1,4 +1,4 @@
-import { dayKey, type HealthDay, type HealthWorkout } from "@bites/shared";
+import { dayKey, type ActivityResponse, type HealthDay, type HealthWorkout } from "@bites/shared";
 import { checkAndCount } from "./ratelimit";
 import { sha256Hex, type PlanDeps } from "./redeem";
 import type { Env } from "./env";
@@ -135,4 +135,58 @@ export async function handleSync(req: Request, env: Env, deps: ActivityDeps): Pr
   }
   await env.RATE_KV.put(`activity:${uid}:last`, JSON.stringify({ syncedAt: now.getTime(), tz: parsed.tz }), { expirationTtl: MONTH_TTL });
   return json({ ok: true, days: parsed.days.length });
+}
+
+const MAX_RANGE_DAYS = 800;
+
+export function monthsBetween(from: string, to: string): string[] {
+  const out: string[] = [];
+  let y = Number(from.slice(0, 4));
+  let m = Number(from.slice(5, 7));
+  const endY = Number(to.slice(0, 4));
+  const endM = Number(to.slice(5, 7));
+  while (y < endY || (y === endY && m <= endM)) {
+    out.push(`${y}-${String(m).padStart(2, "0")}`);
+    m += 1;
+    if (m > 12) {
+      m = 1;
+      y += 1;
+    }
+  }
+  return out;
+}
+
+export async function handleGetActivity(req: Request, env: Env, deps: ActivityDeps): Promise<Response> {
+  const uid = await deps.verifyRequest(req, env);
+  if (!uid) return json({ error: "unauthorized" }, 401);
+  const params = new URL(req.url).searchParams;
+  const from = params.get("from") ?? "";
+  const to = params.get("to") ?? "";
+  if (!DAY_RE.test(from) || !DAY_RE.test(to) || from > to) return json({ error: "bad_request" }, 400);
+  if ((Date.parse(to) - Date.parse(from)) / 86_400_000 > MAX_RANGE_DAYS) return json({ error: "bad_request" }, 400);
+
+  const buckets = await Promise.all(monthsBetween(from, to).map((m) => env.RATE_KV.get(`activity:${uid}:${m}`)));
+  const days: ActivityResponse["days"] = {};
+  for (const raw of buckets) {
+    if (!raw) continue;
+    for (const [d, value] of Object.entries((JSON.parse(raw) as { days: ActivityResponse["days"] }).days)) if (d >= from && d <= to) days[d] = value;
+  }
+  const last = await env.RATE_KV.get(`activity:${uid}:last`);
+  const hasKey = (await env.RATE_KV.get(`actkeyof:${uid}`)) !== null;
+  const body: ActivityResponse = { days, lastSync: last ? JSON.parse(last) : null, hasKey };
+  return json(body);
+}
+
+/** Used by "Delete all data": removes the key and every stored day. */
+export async function handleDeleteActivity(req: Request, env: Env, deps: ActivityDeps): Promise<Response> {
+  const uid = await deps.verifyRequest(req, env);
+  if (!uid) return json({ error: "unauthorized" }, 401);
+  await removeKey(env.RATE_KV, uid);
+  let cursor: string | undefined;
+  do {
+    const page = await env.RATE_KV.list({ prefix: `activity:${uid}:`, cursor });
+    await Promise.all(page.keys.map((k) => env.RATE_KV.delete(k.name)));
+    cursor = page.list_complete ? undefined : page.cursor;
+  } while (cursor);
+  return json({ ok: true });
 }
