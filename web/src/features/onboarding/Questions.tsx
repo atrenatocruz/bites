@@ -2,7 +2,7 @@ import { useState, type ReactNode } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { ChevronLeft } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { bmi, type Activity, type Goal, type Profile, type Sex } from "@bites/shared";
+import { bmi, type Activity, type Goal, type Health, type Pace, type Profile, type Sex, type WorkType } from "@bites/shared";
 import PillButton from "../../components/PillButton";
 
 export interface Answers {
@@ -12,9 +12,17 @@ export interface Answers {
   heightCm: string;
   weightKg: string;
   activity: Activity;
+  targetKg: string;
+  pace: Pace;
+  workType: WorkType;
+  sleepHours: number;
+  health: Health;
 }
 
-export const DEFAULT_ANSWERS: Answers = { goal: "maintain", sex: null, birthYear: "1990", heightCm: "170", weightKg: "70", activity: "light" };
+export const DEFAULT_ANSWERS: Answers = {
+  goal: "maintain", sex: null, birthYear: "1990", heightCm: "170", weightKg: "70", activity: "light",
+  targetKg: "", pace: "steady", workType: "desk", sleepHours: 7.5, health: "none",
+};
 
 export const answersFrom = (p: Profile): Answers => ({
   goal: p.goal,
@@ -23,6 +31,11 @@ export const answersFrom = (p: Profile): Answers => ({
   heightCm: String(p.heightCm),
   weightKg: String(p.weightKg),
   activity: p.activity,
+  targetKg: p.targetWeightKg === undefined ? "" : String(p.targetWeightKg),
+  pace: p.pace ?? "steady",
+  workType: p.workType ?? "desk",
+  sleepHours: p.sleepHours ?? 7.5,
+  health: p.health ?? "none",
 });
 
 const inRange = (raw: string, min: number, max: number) => {
@@ -34,6 +47,14 @@ const validBirthYear = (raw: string) => inRange(raw, 1900, new Date().getFullYea
 const validHeight = (raw: string) => inRange(raw, 100, 250);
 const validWeight = (raw: string) => inRange(raw, 30, 300);
 
+const validTarget = (a: Pick<Answers, "goal" | "targetKg" | "weightKg">) => {
+  if (a.goal === "maintain") return true;
+  const w = Number(a.weightKg);
+  return a.goal === "lose" ? inRange(a.targetKg, 30, w - 0.1) : inRange(a.targetKg, w + 0.1, 300);
+};
+
+type StepId = "goal" | "about" | "body" | "target" | "activity" | "lifestyle" | "health";
+
 const GOALS: Goal[] = ["lose", "maintain", "gain"];
 const SEXES: Sex[] = ["female", "male"];
 const ACTIVITIES: { id: Activity; key: string }[] = [
@@ -42,7 +63,17 @@ const ACTIVITIES: { id: Activity; key: string }[] = [
   { id: "moderate", key: "moderate" },
   { id: "very", key: "very" },
 ];
-const TOTAL = 4;
+const PACES: Pace[] = ["slow", "steady", "fast"];
+const WORK_TYPES: WorkType[] = ["desk", "mixed", "active"];
+const SLEEP: { hours: number; key: string }[] = [
+  { hours: 5, key: "sleepLow" },
+  { hours: 6.5, key: "sleepMid" },
+  { hours: 7.5, key: "sleepGood" },
+  { hours: 9, key: "sleepLong" },
+];
+const HEALTH: Health[] = ["none", "pregnant", "breastfeeding", "condition"];
+const stepsFor = (goal: Goal): StepId[] =>
+  goal === "maintain" ? ["goal", "about", "body", "activity", "lifestyle", "health"] : ["goal", "about", "body", "target", "activity", "lifestyle", "health"];
 
 function Option({ selected, onClick, children, className = "" }: { selected: boolean; onClick: () => void; children: ReactNode; className?: string }) {
   return (
@@ -90,23 +121,32 @@ export default function Questions({ value, onChange, onFinish, onExit }: Questio
   const { t } = useTranslation();
   const reduce = useReducedMotion();
   const [step, setStep] = useState(0);
+  const steps = stepsFor(value.goal);
+  const TOTAL = steps.length;
+  const id = steps[step]!;
 
   const heightOk = validHeight(value.heightCm);
   const weightOk = validWeight(value.weightKg);
   const birthOk = validBirthYear(value.birthYear);
-  const canContinue = [true, value.sex !== null && birthOk, heightOk && weightOk, true][step]!;
+  const targetOk = weightOk && validTarget(value);
+  const canContinue = { goal: true, about: value.sex !== null && birthOk, body: heightOk && weightOk, target: targetOk, activity: true, lifestyle: true, health: true }[id];
 
   const next = () => {
     if (!canContinue) return;
-    if (step === TOTAL - 1) onFinish();
-    else setStep(step + 1);
+    if (step === TOTAL - 1) return onFinish();
+    if (steps[step + 1] === "target" && !validTarget(value)) {
+      const w = Number(value.weightKg);
+      onChange({ targetKg: String(Math.round(value.goal === "lose" ? Math.max(30, w - 5) : Math.min(300, w + 5))) });
+    }
+    setStep(step + 1);
   };
   const back = () => (step === 0 ? onExit() : setStep(step - 1));
 
   const bmiValue = heightOk && weightOk ? bmi(Number(value.weightKg), Number(value.heightCm)) : null;
   const category = bmiValue === null ? "" : bmiValue < 18.5 ? "bmiUnderweight" : bmiValue < 25 ? "bmiHealthy" : bmiValue < 30 ? "bmiOverweight" : "bmiObese";
 
-  const titleKey = ["goal", "about", "body", "activity"][step]!;
+  const titleKey = id;
+  const sleepKey = SLEEP.find((x) => x.hours === value.sleepHours)?.key;
 
   return (
     <form
@@ -134,7 +174,7 @@ export default function Questions({ value, onChange, onFinish, onExit }: Questio
       </div>
 
       <motion.div
-        key={step}
+        key={id}
         className="min-h-0 flex-1 overflow-y-auto pt-8"
         initial={{ opacity: 0, x: reduce ? 0 : 24 }}
         animate={{ opacity: 1, x: 0 }}
@@ -143,7 +183,7 @@ export default function Questions({ value, onChange, onFinish, onExit }: Questio
         <p className="text-caption">{t("onboarding.step", { current: step + 1, total: TOTAL })}</p>
         <h1 className="mt-2 text-large-title tracking-[-0.02em]">{t(`onboarding.${titleKey}.title`)}</h1>
 
-        {step === 0 && (
+        {id === "goal" && (
           <div className="mt-8 flex flex-col gap-3">
             {GOALS.map((g) => (
               <Option key={g} selected={value.goal === g} onClick={() => onChange({ goal: g })}>
@@ -153,7 +193,7 @@ export default function Questions({ value, onChange, onFinish, onExit }: Questio
           </div>
         )}
 
-        {step === 1 && (
+        {id === "about" && (
           <div className="mt-8 flex flex-col gap-6">
             <div>
               <div className="text-caption">{t("onboarding.about.sexLabel")}</div>
@@ -170,7 +210,7 @@ export default function Questions({ value, onChange, onFinish, onExit }: Questio
           </div>
         )}
 
-        {step === 2 && (
+        {id === "body" && (
           <div className="mt-8 flex flex-col gap-5">
             <NumberField id="height" label={t("onboarding.body.height")} value={value.heightCm} unit={t("common.cm")} invalid={value.heightCm !== "" && !heightOk} onChange={(v) => onChange({ heightCm: v })} />
             <NumberField id="weight" label={t("onboarding.body.weight")} value={value.weightKg} unit={t("common.kg")} invalid={value.weightKg !== "" && !weightOk} onChange={(v) => onChange({ weightKg: v })} />
@@ -180,12 +220,69 @@ export default function Questions({ value, onChange, onFinish, onExit }: Questio
           </div>
         )}
 
-        {step === 3 && (
+        {id === "target" && (
+          <div className="mt-8 flex flex-col gap-6">
+            <NumberField id="target-weight" label={t("onboarding.target.weight")} value={value.targetKg} unit={t("common.kg")} invalid={value.targetKg !== "" && !targetOk} onChange={(v) => onChange({ targetKg: v })} />
+            <p className="min-h-5 text-subhead text-fg-2" aria-live="polite">
+              {value.targetKg !== "" && !targetOk && t(value.goal === "lose" ? "onboarding.target.belowCurrent" : "onboarding.target.aboveCurrent")}
+            </p>
+            <div>
+              <div className="text-caption">{t("onboarding.target.paceLabel")}</div>
+              <div className="mt-1.5 flex flex-col gap-3" role="group" aria-label={t("onboarding.target.paceLabel")}>
+                {PACES.map((p) => (
+                  <Option key={p} selected={value.pace === p} onClick={() => onChange({ pace: p })}>
+                    <span className="block text-headline">{t(`onboarding.target.${p}`)}</span>
+                    <span className="mt-0.5 block text-subhead text-fg-2">{t(`onboarding.target.${p}Hint.${value.goal === "gain" ? "gain" : "lose"}`)}</span>
+                  </Option>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {id === "activity" && (
           <div className="mt-8 flex flex-col gap-3">
             {ACTIVITIES.map(({ id, key }) => (
               <Option key={id} selected={value.activity === id} onClick={() => onChange({ activity: id })}>
                 <span className="block text-headline">{t(`onboarding.activity.${key}`)}</span>
                 <span className="mt-0.5 block text-subhead text-fg-2">{t(`onboarding.activity.${key}Hint`)}</span>
+              </Option>
+            ))}
+          </div>
+        )}
+
+        {id === "lifestyle" && (
+          <div className="mt-8 flex flex-col gap-6">
+            <div>
+              <div className="text-caption">{t("onboarding.lifestyle.workLabel")}</div>
+              <div className="mt-1.5 flex flex-col gap-3" role="group" aria-label={t("onboarding.lifestyle.workLabel")}>
+                {WORK_TYPES.map((w) => (
+                  <Option key={w} selected={value.workType === w} onClick={() => onChange({ workType: w })}>
+                    <span className="block text-headline">{t(`onboarding.lifestyle.${w}`)}</span>
+                    <span className="mt-0.5 block text-subhead text-fg-2">{t(`onboarding.lifestyle.${w}Hint`)}</span>
+                  </Option>
+                ))}
+              </div>
+            </div>
+            <div>
+              <div className="text-caption">{t("onboarding.lifestyle.sleepLabel")}</div>
+              <div className="mt-1.5 grid grid-cols-2 gap-3" role="group" aria-label={t("onboarding.lifestyle.sleepLabel")}>
+                {SLEEP.map(({ hours, key }) => (
+                  <Option key={hours} selected={sleepKey === key} onClick={() => onChange({ sleepHours: hours })}>
+                    <span className="text-headline">{t(`onboarding.lifestyle.${key}`)}</span>
+                  </Option>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {id === "health" && (
+          <div className="mt-8 flex flex-col gap-3">
+            {HEALTH.map((h) => (
+              <Option key={h} selected={value.health === h} onClick={() => onChange({ health: h })}>
+                <span className="block text-headline">{t(`onboarding.health.${h}`)}</span>
+                <span className="mt-0.5 block text-subhead text-fg-2">{t(`onboarding.health.${h}Hint`)}</span>
               </Option>
             ))}
           </div>

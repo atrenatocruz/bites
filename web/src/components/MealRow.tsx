@@ -15,7 +15,7 @@ export default function MealRow({ meal, onClick }: MealRowProps) {
         {meal.thumb && <img src={meal.thumb} alt="" className="size-full object-cover" />}
       </div>
       <div className="min-w-0 flex-1">
-        <div className="truncate text-headline">{meal.title}</div>
+        <div className="line-clamp-2 break-words text-headline">{meal.title}</div>
         <div className="text-caption tabular">{`${t(`mealType.${meal.mealType}`)} · ${format(meal.createdAt, "HH:mm")}`}</div>
       </div>
       <div className="shrink-0 text-right">

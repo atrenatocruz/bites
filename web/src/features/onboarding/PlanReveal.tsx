@@ -2,13 +2,17 @@ import { useEffect, useState } from "react";
 import { animate, useReducedMotion } from "framer-motion";
 import { Minus, Plus } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { macroTargets, type Goal } from "@bites/shared";
+import { macroTargets, type Goal, type Health } from "@bites/shared";
 import PillButton from "../../components/PillButton";
 
 interface PlanRevealProps {
   kcal: number;
   weightKg: number;
   goal: Goal;
+  weeks?: number | null;
+  targetKg?: number;
+  sleepHours?: number;
+  health?: Health;
   onKcalChange: (kcal: number) => void;
   onStart: () => void;
   google?: boolean;
@@ -46,7 +50,7 @@ function GoogleMark() {
   );
 }
 
-export default function PlanReveal({ kcal, weightKg, goal, onKcalChange, onStart, google, notice, busy }: PlanRevealProps) {
+export default function PlanReveal({ kcal, weightKg, goal, weeks, targetKg, sleepHours, health, onKcalChange, onStart, google, notice, busy }: PlanRevealProps) {
   const { t } = useTranslation();
   const [editing, setEditing] = useState(false);
   const shown = useCountUp(kcal);
@@ -98,6 +102,12 @@ export default function PlanReveal({ kcal, weightKg, goal, onKcalChange, onStart
         </div>
       </div>
 
+      <div className="mb-4 flex flex-col gap-1.5 text-center text-subhead text-fg-2">
+        {weeks != null && targetKg !== undefined && <p>{t("onboarding.plan.weeks", { weeks, target: targetKg })}</p>}
+        {sleepHours !== undefined && sleepHours < 6 && <p>{t("onboarding.plan.sleepTip")}</p>}
+        {(health === "pregnant" || health === "breastfeeding") && <p>{t("onboarding.plan.pregnantNote")}</p>}
+        {health === "condition" && <p>{t("onboarding.plan.conditionNote")}</p>}
+      </div>
       <p className="mb-4 text-center text-caption">{t("onboarding.plan.footnote")}</p>
       {notice && (
         <p role="status" className="mb-3 text-center text-subhead text-fg-2">

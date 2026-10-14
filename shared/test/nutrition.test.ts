@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { bmr, kcalTarget, macroTargets, scaleItem, sumTotals, macroKcal, dayKey, guessMealType, bmi } from "../src";
+import { bmr, kcalTarget, macroTargets, scaleItem, sumTotals, macroKcal, dayKey, guessMealType, bmi, weeksToGoal } from "../src";
 import type { FoodItem } from "../src";
 
 const rice: FoodItem = { name: "Rice", cookingMethod: "boiled", grams: 150, kcal: 195, protein: 4, carbs: 42, fat: 0.5, fiber: 0.6, confidence: 0.8, assumption: null };
@@ -17,6 +17,26 @@ describe("kcalTarget", () => {
   it("gain = tdee + 300", () => expect(kcalTarget({ ...base, goal: "gain" }, now)).toBe(3060));
   it("never below floor", () =>
     expect(kcalTarget({ sex: "female", birthYear: 1950, heightCm: 150, weightKg: 45, activity: "sedentary", goal: "lose" }, now)).toBe(1200));
+});
+
+describe("kcalTarget with the onboarding extras", () => {
+  const base = { sex: "male" as const, birthYear: 1996, heightCm: 180, weightKg: 80, activity: "moderate" as const };
+  const now = new Date(2026, 9, 14);
+  it("pace sets the deficit: 0.5 kg a week is 550 kcal", () => expect(kcalTarget({ ...base, goal: "lose", pace: "steady" }, now)).toBe(2210));
+  it("a faster pace lowers the target further", () => expect(kcalTarget({ ...base, goal: "lose", pace: "fast" }, now)).toBeLessThan(kcalTarget({ ...base, goal: "lose", pace: "slow" }, now)));
+  it("an active job raises the activity factor", () => expect(kcalTarget({ ...base, goal: "maintain", workType: "active" }, now)).toBe(2940));
+  it("pregnancy removes any deficit", () => expect(kcalTarget({ ...base, goal: "lose", pace: "fast", health: "pregnant" }, now)).toBe(2760));
+  it("breastfeeding removes the deficit and adds 330 kcal", () => expect(kcalTarget({ ...base, goal: "lose", pace: "fast", health: "breastfeeding" }, now)).toBe(3090));
+});
+
+describe("weeksToGoal", () => {
+  it("rounds up whole weeks", () => expect(weeksToGoal("lose", 80, 70, "steady")).toBe(20));
+  it("works for gaining", () => expect(weeksToGoal("gain", 60, 65, "steady")).toBe(20));
+  it("is null when maintaining or the target is on the wrong side", () => {
+    expect(weeksToGoal("maintain", 80, 70, "steady")).toBeNull();
+    expect(weeksToGoal("lose", 80, 85, "steady")).toBeNull();
+    expect(weeksToGoal("lose", 80, undefined, "steady")).toBeNull();
+  });
 });
 
 describe("macroTargets", () => {
