@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { handleCreateKey, handleDeleteActivity, handleDeleteKey, handleGetActivity, handleSync, monthsBetween } from "../src/activity";
 import { sha256Hex } from "../src/redeem";
 import type { Env } from "../src/env";
@@ -187,5 +187,97 @@ describe("read and delete", () => {
     const res = await handleDeleteActivity(req("/api/activity", { method: "DELETE" }), env, deps);
     expect(res.status).toBe(200);
     expect([...store.keys()].sort()).toEqual(["activity:u2:2026-10"]);
+  });
+});
+
+describe("sync: what counts as data", () => {
+  const connect = async () => {
+    const s = setup();
+    const { key } = (await (await handleCreateKey(req("/api/activity/key", { method: "POST" }), s.env, s.deps)).json()) as { key: string };
+    const sync = (body: unknown) =>
+      handleSync(req("/api/activity/sync", { method: "POST", headers: { authorization: `Bearer ${key}` }, body: typeof body === "string" ? body : JSON.stringify(body) }), s.env, s.deps);
+    return { ...s, sync };
+  };
+  const month = (store: Map<string, string>) => JSON.parse(store.get("activity:u1:2026-10") ?? '{"days":{}}').days;
+
+  it("treats zero resting energy as missing (no Apple Watch)", async () => {
+    const { store, sync } = await connect();
+    await sync({ days: [{ day: "2026-10-14", restingKcal: 0, activeKcal: 380, workouts: [] }] });
+    expect(month(store)["2026-10-14"]).toEqual({ restingKcal: null, activeKcal: 380, workouts: [] });
+  });
+
+  it("does not store a day with no samples at all", async () => {
+    const { store, sync } = await connect();
+    const res = await sync({ days: [{ day: "2026-10-14", restingKcal: 0, activeKcal: 0, workouts: [] }] });
+    expect(res.status).toBe(200);
+    expect(month(store)["2026-10-14"]).toBeUndefined();
+  });
+
+  it("never overwrites a stored day with an empty one (e.g. a run while the phone was locked)", async () => {
+    const { store, sync } = await connect();
+    await sync({ days: [{ day: "2026-10-13", restingKcal: 1700, activeKcal: 500, workouts: [] }] });
+    await sync({ days: [{ day: "2026-10-13", restingKcal: 0, activeKcal: 0, workouts: [] }, { day: "2026-10-14", restingKcal: "", activeKcal: null }] });
+    expect(month(store)["2026-10-13"]).toEqual({ restingKcal: 1700, activeKcal: 500, workouts: [] });
+    expect(month(store)["2026-10-14"]).toBeUndefined();
+  });
+
+  it("reads grouped numbers in either style", async () => {
+    const { store, sync } = await connect();
+    await sync({ days: [
+      { day: "2026-10-12", restingKcal: "1,712", activeKcal: "1,712.4" },
+      { day: "2026-10-13", restingKcal: "1.712,6", activeKcal: "1\u00a0712" },
+      { day: "2026-10-14", restingKcal: "1712,634", activeKcal: "412,5" },
+    ] });
+    const days = month(store);
+    expect([days["2026-10-12"].restingKcal, days["2026-10-12"].activeKcal]).toEqual([1712, 1712]);
+    expect([days["2026-10-13"].restingKcal, days["2026-10-13"].activeKcal]).toEqual([1713, 1712]);
+    expect([days["2026-10-14"].restingKcal, days["2026-10-14"].activeKcal]).toEqual([1713, 413]);
+  });
+
+  it("reads every group of a multi-group number (so an absurd value is rejected, not shrunk)", async () => {
+    const { sync } = await connect();
+    expect((await sync({ days: [{ day: "2026-10-14", restingKcal: "1,712,000", activeKcal: 1 }] })).status).toBe(400);
+  });
+
+  it("gives every failure a readable message for the Shortcut", async () => {
+    const { sync } = await connect();
+    for (const body of ["not json", { days: [] }, "x".repeat(64 * 1024 + 1)]) {
+      const out = (await (await sync(body)).json()) as { message?: string };
+      expect(typeof out.message).toBe("string");
+      expect(out.message!.length).toBeGreaterThan(10);
+    }
+  });
+
+  it("answers with a message instead of crashing when storage fails", async () => {
+    const s = await connect();
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    const put = s.env.RATE_KV.put.bind(s.env.RATE_KV);
+    (s.env.RATE_KV as unknown as { put: unknown }).put = async (k: string, v: string, o?: unknown) => {
+      if (k.startsWith("activity:")) throw new Error("KV PUT failed: 429 Too Many Requests");
+      return put(k, v, o as KVNamespacePutOptions);
+    };
+    const res = await s.sync({ days: [{ day: "2026-10-14", restingKcal: 1700, activeKcal: 300 }] });
+    expect(res.status).toBe(503);
+    expect(((await res.json()) as { message?: string }).message).toMatch(/try again/i);
+  });
+
+  it("rejects impossible dates", async () => {
+    const { sync } = await connect();
+    expect((await sync({ days: [{ day: "2026-10-99", restingKcal: 1, activeKcal: 1 }] })).status).toBe(400);
+  });
+});
+
+describe("read: strict dates", () => {
+  it("rejects impossible dates instead of reading thousands of months", async () => {
+    const { env, deps } = setup();
+    let reads = 0;
+    const get = env.RATE_KV.get.bind(env.RATE_KV);
+    (env.RATE_KV as unknown as { get: unknown }).get = async (k: string) => {
+      reads += 1;
+      return get(k);
+    };
+    expect((await handleGetActivity(req("/api/activity?from=0000-01-01&to=9999-99-99"), env, deps)).status).toBe(400);
+    expect((await handleGetActivity(req("/api/activity?from=2026-02-30&to=2026-03-01"), env, deps)).status).toBe(400);
+    expect(reads).toBe(0);
   });
 });

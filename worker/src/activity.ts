@@ -45,12 +45,37 @@ const MAX_WORKOUTS = 20;
 const SYNCS_PER_HOUR = 30;
 const DAY_RE = /^\d{4}-\d{2}-\d{2}$/;
 const BAD_KEY = { error: "invalid_key", message: "Bites key not recognised. Reconnect Apple Health in Bites Settings." };
+// The Shortcut shows `message` to the person, so every failure carries one.
+const BAD_REQUEST = { error: "bad_request", message: "Bites couldn't read this Health data. Get the latest Shortcut from Bites Settings." };
+const TOO_LARGE = { error: "too_large", message: "Too much data in one sync. Get the latest Shortcut from Bites Settings." };
+const RATE_LIMITED = { error: "rate_limited", message: "Too many syncs this hour. Try again later." };
+const UNAVAILABLE = { error: "unavailable", message: "Bites couldn't save right now. Try again in a minute." };
 
-/** Shortcuts may send numbers as text, and a pt-PT phone uses a decimal comma. */
+/** A real calendar day in YYYY-MM-DD form ("2026-02-30" and "9999-99-99" are not). */
+function validDay(s: string): boolean {
+  if (!DAY_RE.test(s)) return false;
+  const d = new Date(`${s}T00:00:00Z`);
+  return !Number.isNaN(d.getTime()) && d.toISOString().slice(0, 10) === s;
+}
+
+/**
+ * Shortcuts may send numbers as text in the phone's format: "412,5" (decimal comma), "1,712" or "1.712" (grouping),
+ * "1,712.4" / "1.712,6" (both), or with (non-breaking) spaces between groups.
+ */
 function toNumber(v: unknown): number | null | undefined {
   if (v === null || v === undefined || v === "") return null;
-  const n = typeof v === "string" ? Number(v.trim().replace(",", ".")) : v;
-  return typeof n === "number" && Number.isFinite(n) ? n : undefined;
+  if (typeof v === "number") return Number.isFinite(v) ? v : undefined;
+  if (typeof v !== "string") return undefined;
+  let t = v.replace(/[\s\u00a0\u202f']/g, "");
+  if (t === "") return null;
+  const grouped = /^\d{1,3}([.,])\d{3}(?:\1\d{3})*$/.exec(t);
+  if (grouped) t = t.split(grouped[1]!).join("");
+  else {
+    const last = Math.max(t.lastIndexOf(","), t.lastIndexOf("."));
+    if (last >= 0) t = `${t.slice(0, last).replace(/[.,]/g, "")}.${t.slice(last + 1)}`;
+  }
+  const n = Number(t);
+  return Number.isFinite(n) ? n : undefined;
 }
 
 /** null = no value, undefined = invalid. */
@@ -81,7 +106,11 @@ function validTz(tz: unknown): string {
   }
 }
 
-export function parseSync(body: unknown, now: Date): { tz: string; days: [string, HealthDay][] } | null {
+/** Health sums to 0 when it has no samples, so 0 resting energy means "not measured" (no Apple Watch). */
+const isEmpty = (d: HealthDay) => d.restingKcal === null && !d.activeKcal && d.workouts.length === 0;
+
+/** `days` holds only days with data; `received` counts every day sent. */
+export function parseSync(body: unknown, now: Date): { tz: string; days: [string, HealthDay][]; received: number } | null {
   if (!body || typeof body !== "object") return null;
   const { tz, days } = body as { tz?: unknown; days?: unknown };
   if (!Array.isArray(days) || days.length === 0 || days.length > MAX_DAYS) return null;
@@ -91,7 +120,7 @@ export function parseSync(body: unknown, now: Date): { tz: string; days: [string
   for (const d of days) {
     if (!d || typeof d !== "object") return null;
     const o = d as Record<string, unknown>;
-    if (typeof o.day !== "string" || !DAY_RE.test(o.day) || o.day < oldest || o.day > newest) return null;
+    if (typeof o.day !== "string" || !validDay(o.day) || o.day < oldest || o.day > newest) return null;
     const restingKcal = energy(o.restingKcal, 20_000);
     const activeKcal = energy(o.activeKcal, 20_000);
     if (restingKcal === undefined || activeKcal === undefined) return null;
@@ -99,9 +128,10 @@ export function parseSync(body: unknown, now: Date): { tz: string; days: [string
     if (!Array.isArray(list) || list.length > MAX_WORKOUTS) return null;
     const workouts = list.map(parseWorkout);
     if (workouts.some((w) => w === undefined)) return null;
-    out.push([o.day, { restingKcal, activeKcal, workouts: workouts as HealthWorkout[] }]);
+    const value: HealthDay = { restingKcal: restingKcal ? restingKcal : null, activeKcal, workouts: workouts as HealthWorkout[] };
+    if (!isEmpty(value)) out.push([o.day, value]);
   }
-  return { tz: validTz(tz), days: out };
+  return { tz: validTz(tz), days: out, received: days.length };
 }
 
 /** Called by the Apple Shortcut with the person's key. Each sent day overwrites that day. */
@@ -112,29 +142,35 @@ export async function handleSync(req: Request, env: Env, deps: ActivityDeps): Pr
   if (!uid) return json(BAD_KEY, 401);
 
   const text = await req.text();
-  if (text.length > MAX_BODY) return json({ error: "too_large" }, 413);
+  if (text.length > MAX_BODY) return json(TOO_LARGE, 413);
   const now = deps.now();
-  if (!(await checkAndCount(env.RATE_KV, uid, `act-${now.toISOString().slice(0, 13)}`, SYNCS_PER_HOUR))) return json({ error: "rate_limited" }, 429);
+  if (!(await checkAndCount(env.RATE_KV, uid, `act-${now.toISOString().slice(0, 13)}`, SYNCS_PER_HOUR))) return json(RATE_LIMITED, 429);
 
   let body: unknown;
   try {
     body = JSON.parse(text);
   } catch {
-    return json({ error: "bad_request" }, 400);
+    return json(BAD_REQUEST, 400);
   }
   const parsed = parseSync(body, now);
-  if (!parsed) return json({ error: "bad_request" }, 400);
+  if (!parsed) return json(BAD_REQUEST, 400);
 
   const byMonth = new Map<string, [string, HealthDay][]>();
   for (const entry of parsed.days) byMonth.set(entry[0].slice(0, 7), [...(byMonth.get(entry[0].slice(0, 7)) ?? []), entry]);
-  for (const [month, entries] of byMonth) {
-    const k = `activity:${uid}:${month}`;
-    const current = JSON.parse((await env.RATE_KV.get(k)) ?? '{"days":{}}') as { days: Record<string, HealthDay> };
-    for (const [d, value] of entries) current.days[d] = value;
-    await env.RATE_KV.put(k, JSON.stringify(current), { expirationTtl: MONTH_TTL });
+  try {
+    for (const [month, entries] of byMonth) {
+      const k = `activity:${uid}:${month}`;
+      const current = JSON.parse((await env.RATE_KV.get(k)) ?? '{"days":{}}') as { days: Record<string, HealthDay> };
+      for (const [d, value] of entries) current.days[d] = value;
+      await env.RATE_KV.put(k, JSON.stringify(current), { expirationTtl: MONTH_TTL });
+    }
+    await env.RATE_KV.put(`activity:${uid}:last`, JSON.stringify({ syncedAt: now.getTime(), tz: parsed.tz }), { expirationTtl: MONTH_TTL });
+  } catch (e) {
+    // e.g. KV refusing two writes to the same month within a second when syncs overlap.
+    console.error("activity sync write failed", e);
+    return json(UNAVAILABLE, 503);
   }
-  await env.RATE_KV.put(`activity:${uid}:last`, JSON.stringify({ syncedAt: now.getTime(), tz: parsed.tz }), { expirationTtl: MONTH_TTL });
-  return json({ ok: true, days: parsed.days.length });
+  return json({ ok: true, days: parsed.received });
 }
 
 const MAX_RANGE_DAYS = 800;
@@ -162,7 +198,7 @@ export async function handleGetActivity(req: Request, env: Env, deps: ActivityDe
   const params = new URL(req.url).searchParams;
   const from = params.get("from") ?? "";
   const to = params.get("to") ?? "";
-  if (!DAY_RE.test(from) || !DAY_RE.test(to) || from > to) return json({ error: "bad_request" }, 400);
+  if (!validDay(from) || !validDay(to) || from > to) return json({ error: "bad_request" }, 400);
   if ((Date.parse(to) - Date.parse(from)) / 86_400_000 > MAX_RANGE_DAYS) return json({ error: "bad_request" }, 400);
 
   const buckets = await Promise.all(monthsBetween(from, to).map((m) => env.RATE_KV.get(`activity:${uid}:${m}`)));
