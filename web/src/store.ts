@@ -23,7 +23,7 @@ interface AppState {
 }
 
 export const useStore = create<AppState>((set) => ({
-  tab: "scan",
+  tab: "diary",
   setTab: (tab) => set({ tab }),
   selectedDay: dayKey(new Date()),
   selectedDayPinned: false,

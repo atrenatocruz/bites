@@ -134,89 +134,77 @@ input[type="search"]::-webkit-search-cancel-button {
   display: none;
 }
 
-/* Liquid Glass: a translucent, refracting material for floating chrome. */
+/*
+ * Liquid Glass, after the iOS 26 tab bar: clear material, a hairline rim that catches light, a soft shadow.
+ * Safari ignores custom properties inside -webkit-backdrop-filter, so those values are written out.
+ */
 :root {
-  --island-clearance: calc(max(env(safe-area-inset-bottom), 12px) + 84px);
-  --glass-fill: linear-gradient(180deg, rgba(255, 255, 255, 0.62), rgba(255, 255, 255, 0.34));
-  --glass-edge: rgba(255, 255, 255, 0.7);
-  --glass-edge-soft: rgba(255, 255, 255, 0.18);
-  --glass-shadow: rgba(20, 20, 30, 0.2);
-  --lens-fill: linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.6));
-  --lens-shadow: rgba(20, 20, 30, 0.16);
-  --lens-accent: linear-gradient(180deg, rgba(255, 90, 31, 0.3), rgba(255, 90, 31, 0.16));
+  --island-clearance: calc(max(calc(env(safe-area-inset-bottom) - 12px), 14px) + 68px);
+  --glass-bg: rgba(250, 250, 252, 0.62);
+  --glass-rim: rgba(255, 255, 255, 0.65);
+  --glass-hairline: rgba(0, 0, 0, 0.06);
+  --glass-shadow: 0 6px 20px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.06);
+  --glass-selection: rgba(120, 120, 128, 0.16);
+  --glass-tint: rgba(255, 90, 31, 0.88);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --glass-fill: linear-gradient(180deg, rgba(70, 70, 76, 0.5), rgba(34, 34, 38, 0.36));
-    --glass-edge: rgba(255, 255, 255, 0.26);
-    --glass-edge-soft: rgba(255, 255, 255, 0.06);
-    --glass-shadow: rgba(0, 0, 0, 0.5);
-    --lens-fill: linear-gradient(180deg, rgba(255, 255, 255, 0.28), rgba(255, 255, 255, 0.12));
-    --lens-shadow: rgba(0, 0, 0, 0.35);
-    --lens-accent: linear-gradient(180deg, rgba(255, 106, 51, 0.42), rgba(255, 106, 51, 0.22));
+    --glass-bg: rgba(36, 36, 40, 0.58);
+    --glass-rim: rgba(255, 255, 255, 0.16);
+    --glass-hairline: rgba(255, 255, 255, 0.08);
+    --glass-shadow: 0 6px 20px rgba(0, 0, 0, 0.4), 0 1px 3px rgba(0, 0, 0, 0.3);
+    --glass-selection: rgba(120, 120, 128, 0.32);
+    --glass-tint: rgba(255, 106, 51, 0.9);
   }
 }
 
-.glass-island {
-  position: relative;
-  background: var(--glass-fill);
-  -webkit-backdrop-filter: blur(28px) saturate(190%) brightness(1.04);
-  backdrop-filter: blur(28px) saturate(190%) brightness(1.04);
-  box-shadow:
-    inset 0 1px 0.5px var(--glass-edge),
-    inset 0 -1px 0.5px var(--glass-edge-soft),
-    inset 0 0 0 1px var(--glass-edge-soft),
-    0 12px 32px var(--glass-shadow),
-    0 2px 6px rgba(0, 0, 0, 0.08);
+.glass,
+.glass-tinted {
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  backdrop-filter: blur(16px) saturate(180%);
 }
 
-/* A soft sheen across the top, the way light catches curved glass. */
-.glass-island::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  pointer-events: none;
-  background: radial-gradient(120% 90% at 50% -30%, rgba(255, 255, 255, 0.45), transparent 60%);
-  mix-blend-mode: soft-light;
+.glass {
+  background: var(--glass-bg);
+  box-shadow:
+    inset 0 0.5px 0 var(--glass-rim),
+    inset 0 0 0 0.5px var(--glass-hairline),
+    var(--glass-shadow);
 }
 
-.glass-lens {
-  background: var(--lens-fill);
+.glass-tinted {
+  background: var(--glass-tint);
   box-shadow:
-    inset 0 1px 0.5px rgba(255, 255, 255, 0.9),
-    inset 0 -1px 1px rgba(255, 255, 255, 0.25),
-    0 3px 10px var(--lens-shadow);
+    inset 0 0.5px 0 rgba(255, 255, 255, 0.45),
+    inset 0 0 0 0.5px rgba(255, 255, 255, 0.12),
+    var(--glass-shadow);
 }
-.glass-lens--accent {
-  background: var(--lens-accent);
-  box-shadow:
-    inset 0 1px 0.5px rgba(255, 255, 255, 0.55),
-    inset 0 -1px 1px rgba(255, 255, 255, 0.12),
-    0 3px 12px rgba(255, 90, 31, 0.28);
+
+.glass-selection {
+  background: var(--glass-selection);
 }
 
 @media (prefers-reduced-transparency: reduce) {
-  .glass-island {
+  .glass {
     background: var(--bg-elevated);
+  }
+  .glass-tinted {
+    background: var(--accent);
+  }
+  .glass,
+  .glass-tinted {
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
-  }
-  .glass-island::before {
-    display: none;
-  }
-  .glass-lens {
-    background: var(--bg);
   }
 }
 
 @media (prefers-contrast: more) {
-  .glass-island {
+  .glass {
     background: var(--bg-elevated);
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
-    box-shadow: inset 0 0 0 1.5px var(--fg-secondary), 0 8px 24px var(--glass-shadow);
+    box-shadow: inset 0 0 0 1.5px var(--fg-secondary), var(--glass-shadow);
   }
 }
 
