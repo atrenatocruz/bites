@@ -77,3 +77,17 @@ body {
 }
 
 .tabular { font-variant-numeric: tabular-nums; }
+
+@keyframes shimmer-sweep {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(100%); }
+}
+
+.shimmer {
+  background: linear-gradient(100deg, transparent 20%, rgba(255, 255, 255, 0.28) 50%, transparent 80%);
+  animation: shimmer-sweep 1.4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shimmer { animation: none; background: rgba(255, 255, 255, 0.12); }
+}

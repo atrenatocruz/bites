@@ -50,8 +50,10 @@
   "scan": {
     "scaleHint": "Include a fork or your hand for scale.",
     "gallery": "Gallery", "type": "Type", "shutter": "Take photo",
+    "detailClear": "Clear detail",
     "addDetail": "Add detail",
     "detailPlaceholder": "e.g. no sauce, half portion",
+    "errorTitle": "Couldn't analyze this",
     "analyzing": "Analyzing…",
     "describePlaceholder": "Describe your meal, e.g. two eggs and toast",
     "describeTitle": "Type it",
@@ -63,6 +65,7 @@
     }
   },
   "result": {
+    "addItem": "Add item", "addItemTitle": "Add an item", "remove": "Remove {{name}}", "gramsInput": "Grams",
     "range": "between {{low}} and {{high}}",
     "mealType": "Meal type",
     "items": "Ingredients",
@@ -133,6 +136,7 @@
     "generic": "Something went wrong. Try again."
   },
   "toasts": {
+    "view": "View",
     "added": "Added to today",
     "updated": "Meal updated",
     "deleted": "Meal deleted",

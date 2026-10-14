@@ -50,8 +50,10 @@
   "scan": {
     "scaleHint": "Inclui um garfo ou a tua mão para dar escala.",
     "gallery": "Galeria", "type": "Escrever", "shutter": "Tirar fotografia",
+    "detailClear": "Limpar detalhe",
     "addDetail": "Adicionar detalhe",
     "detailPlaceholder": "ex.: sem molho, meia dose",
+    "errorTitle": "Não foi possível analisar",
     "analyzing": "A analisar…",
     "describePlaceholder": "Descreve a refeição, ex.: dois ovos e torrada",
     "describeTitle": "Escreve",
@@ -63,6 +65,7 @@
     }
   },
   "result": {
+    "addItem": "Adicionar item", "addItemTitle": "Adicionar um item", "remove": "Remover {{name}}", "gramsInput": "Gramas",
     "range": "entre {{low}} e {{high}}",
     "mealType": "Tipo de refeição",
     "items": "Ingredientes",
@@ -133,6 +136,7 @@
     "generic": "Algo correu mal. Tenta outra vez."
   },
   "toasts": {
+    "view": "Ver",
     "added": "Adicionado a hoje",
     "updated": "Refeição atualizada",
     "deleted": "Refeição eliminada",
