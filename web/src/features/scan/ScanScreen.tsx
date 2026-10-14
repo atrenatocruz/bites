@@ -78,10 +78,8 @@ export default function ScanScreen() {
 
   const resume = useCallback(() => {
     setPhase("live");
-    setResult(null);
     setError(null);
     setFrame(null);
-    setThumb(null);
     setHint("");
     setDetailOpen(false);
     void videoRef.current?.play().catch(() => {});
@@ -260,10 +258,10 @@ export default function ScanScreen() {
         </div>
       )}
 
-      {phase === "result" && result && (
+      {result && (
         <ResultSheet
           key={resultKey}
-          open
+          open={phase === "result"}
           result={result}
           source={source}
           thumb={thumb}

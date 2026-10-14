@@ -49,4 +49,16 @@ describe("ScanScreen camera states", () => {
     fireEvent.click(screen.getByRole("button", { name: "Analyze" }));
     await waitFor(() => expect(screen.getByText(/having a moment/)).toBeTruthy());
   });
+
+  it("stops the camera tracks when the document becomes hidden", async () => {
+    const stop = vi.fn();
+    mockCamera(async () => ({ getTracks: () => [{ stop }] }) as unknown as MediaStream);
+    vi.spyOn(HTMLMediaElement.prototype, "play").mockResolvedValue();
+    render(<ScanScreen />);
+    await screen.findByRole("button", { name: "Take photo" });
+    Object.defineProperty(document, "hidden", { value: true, configurable: true });
+    document.dispatchEvent(new Event("visibilitychange"));
+    expect(stop).toHaveBeenCalled();
+    Object.defineProperty(document, "hidden", { value: false, configurable: true });
+  });
 });

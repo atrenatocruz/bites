@@ -116,4 +116,22 @@ describe("ResultSheet", () => {
     await act(async () => { fireEvent.click(screen.getByRole("button", { name: "Analyze" })); });
     await waitFor(() => expect(screen.getByTestId("hero-kcal").textContent).toBe("635"));
   });
+
+  it("keeps totals consistent for typed grams of 0 and 99999", () => {
+    setup();
+    const input = screen.getAllByRole("spinbutton")[0]!;
+    fireEvent.change(input, { target: { value: "99999" } });
+    expect(screen.getByTestId("hero-kcal").textContent).toBe(String(250 * 50 + 300));
+    expect(screen.getAllByRole("spinbutton")[0]).toHaveProperty("value", "99999");
+    fireEvent.change(input, { target: { value: "0" } });
+    expect(screen.getByTestId("hero-kcal").textContent).toBe("300");
+  });
+
+  it("disables Save when the total is 0 kcal", () => {
+    setup();
+    fireEvent.change(screen.getAllByRole("spinbutton")[0]!, { target: { value: "0" } });
+    fireEvent.change(screen.getAllByRole("spinbutton")[1]!, { target: { value: "0" } });
+    expect(screen.getByTestId("hero-kcal").textContent).toBe("0");
+    expect((screen.getByRole("button", { name: "Save" }) as HTMLButtonElement).disabled).toBe(true);
+  });
 });

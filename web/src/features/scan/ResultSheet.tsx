@@ -98,7 +98,7 @@ export default function ResultSheet({ open, result, source, thumb, hint, onClose
   };
 
   const save = async () => {
-    if (busy || items.length === 0) return;
+    if (busy || items.length === 0 || totals.kcal === 0) return;
     setBusy("save");
     const { repo, selectedDay, bump, setTab } = useStore.getState();
     try {
@@ -193,7 +193,7 @@ export default function ResultSheet({ open, result, source, thumb, hint, onClose
           )}
 
           <div className="sticky bottom-0 mt-4 flex flex-col items-center gap-1 bg-bg px-5 pb-4 pt-2">
-            <PillButton className="w-full" onClick={() => void save()} disabled={busy === "save" || items.length === 0}>
+            <PillButton className="w-full" onClick={() => void save()} disabled={busy === "save" || items.length === 0 || totals.kcal === 0}>
               {t("result.save")}
             </PillButton>
             <PillButton variant="text" onClick={onRetake}>
