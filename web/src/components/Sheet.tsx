@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { AnimatePresence, motion, useDragControls, useReducedMotion } from "framer-motion";
 import { useTranslation } from "react-i18next";
 
 interface SheetProps {
@@ -14,6 +14,7 @@ const SPRING = { type: "spring", stiffness: 400, damping: 34 } as const;
 export default function Sheet({ open, onClose, children, snap = "auto" }: SheetProps) {
   const { t } = useTranslation();
   const reduce = useReducedMotion();
+  const controls = useDragControls();
   return (
     <AnimatePresence>
       {open && (
@@ -35,6 +36,8 @@ export default function Sheet({ open, onClose, children, snap = "auto" }: SheetP
             exit={reduce ? { opacity: 0 } : { y: "100%" }}
             transition={reduce ? { duration: 0.15 } : SPRING}
             drag={reduce ? false : "y"}
+            dragControls={controls}
+            dragListener={false}
             dragConstraints={{ top: 0, bottom: 0 }}
             dragElastic={{ top: 0, bottom: 0.6 }}
             onDragEnd={(_, info) => {
@@ -42,7 +45,7 @@ export default function Sheet({ open, onClose, children, snap = "auto" }: SheetP
             }}
           >
             <div className="flex shrink-0 justify-center pb-2 pt-2.5">
-              <button type="button" onClick={onClose} aria-label={t("common.close")} className="h-5 w-16 cursor-grab touch-none">
+              <button type="button" onClick={onClose} onPointerDown={(e) => controls.start(e)} aria-label={t("common.close")} className="h-5 w-16 cursor-grab touch-none">
                 <span className="mx-auto mt-2 block h-1 w-9 rounded-full bg-sep" />
               </button>
             </div>

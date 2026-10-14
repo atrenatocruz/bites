@@ -1,11 +1,13 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen, fireEvent, act } from "@testing-library/react";
 import "../src/i18n";
 import type { Meal } from "@bites/shared";
 import Ring from "../src/components/Ring";
 import MacroBars from "../src/components/MacroBars";
 import TabBar from "../src/components/TabBar";
 import MealRow from "../src/components/MealRow";
+import Sheet from "../src/components/Sheet";
+import { Toaster, toast } from "../src/components/Toast";
 import { useStore } from "../src/store";
 
 const arcOf = (c: HTMLElement) => c.querySelector("circle[data-arc]") as SVGCircleElement;
@@ -23,6 +25,32 @@ describe("Ring", () => {
     const { container } = render(<Ring value={500} max={100} size={100} stroke={10} color="red" animate={false} />);
     const [dash = 0, gap = 0] = arcOf(container).getAttribute("stroke-dasharray")!.split(" ").map(Number);
     expect(dash).toBeCloseTo(dash + gap, 1);
+  });
+});
+
+describe("Ring label", () => {
+  it("is exposed as a labelled image", () => {
+    render(<Ring value={1} max={2} size={100} stroke={10} color="red" animate={false} label="1 of 2 kcal" />);
+    expect(screen.getByRole("img", { name: "1 of 2 kcal" })).toBeTruthy();
+  });
+});
+
+describe("Sheet", () => {
+  it("renders content and closes from the handle", () => {
+    let closed = false;
+    render(<Sheet open onClose={() => { closed = true; }}><p>Hello</p></Sheet>);
+    expect(screen.getByText("Hello")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: /close/i }));
+    expect(closed).toBe(true);
+  });
+});
+
+describe("Toaster", () => {
+  it("keeps a persistent status region", () => {
+    render(<Toaster />);
+    expect(screen.getByRole("status")).toBeTruthy();
+    act(() => toast("Saved"));
+    expect(screen.getByRole("status").textContent).toContain("Saved");
   });
 });
 

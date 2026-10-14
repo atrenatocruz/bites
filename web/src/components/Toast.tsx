@@ -29,12 +29,11 @@ export function Toaster() {
     };
   }, []);
   return (
-    <div className="pointer-events-none fixed inset-x-0 bottom-[calc(env(safe-area-inset-bottom)+88px)] z-50 flex justify-center px-5">
+    <div className="pointer-events-none fixed inset-x-0 bottom-[calc(env(safe-area-inset-bottom)+104px)] z-50 flex justify-center px-5" role="status" aria-live="polite">
       <AnimatePresence>
         {item && (
           <motion.div
             key={item.id}
-            role="status"
             className="pointer-events-auto flex items-center gap-4 rounded-full bg-fg px-5 py-3 text-subhead text-bg shadow-lg"
             initial={{ opacity: 0, y: 12, scale: 0.96 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}

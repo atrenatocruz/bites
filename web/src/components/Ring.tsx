@@ -9,9 +9,10 @@ interface RingProps {
   color: string;
   children?: ReactNode;
   animate?: boolean;
+  label?: string;
 }
 
-export default function Ring({ value, max, size, stroke, color, children, animate = true }: RingProps) {
+export default function Ring({ value, max, size, stroke, color, children, animate = true, label }: RingProps) {
   const reduce = useReducedMotion();
   const r = (size - stroke) / 2;
   const circ = 2 * Math.PI * r;
@@ -27,7 +28,7 @@ export default function Ring({ value, max, size, stroke, color, children, animat
     transform: `rotate(-90 ${size / 2} ${size / 2})`,
   };
   return (
-    <div className="relative inline-flex items-center justify-center" style={{ width: size, height: size }}>
+    <div className="relative inline-flex items-center justify-center" role={label ? "img" : undefined} aria-label={label} style={{ width: size, height: size }}>
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} aria-hidden="true">
         <circle {...common} stroke="var(--separator)" opacity={0.6} />
         {ratio > 0 &&
@@ -44,7 +45,7 @@ export default function Ring({ value, max, size, stroke, color, children, animat
             <circle {...common} data-arc="" stroke={color} strokeDasharray={dash} />
           ))}
       </svg>
-      {children && <div className="absolute inset-0 flex flex-col items-center justify-center">{children}</div>}
+      {children && <div aria-hidden={label ? true : undefined} className="absolute inset-0 flex flex-col items-center justify-center">{children}</div>}
     </div>
   );
 }
