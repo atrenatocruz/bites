@@ -82,6 +82,22 @@ describe("SettingsSheet", () => {
     expect(await repo.getProfile()).toBeNull();
   });
 
+  it("also deletes Apple Health data when deleting all data", async () => {
+    const fetchMock = vi.fn(async () => new Response(JSON.stringify({ ok: true }), { status: 200 }));
+    vi.stubGlobal("fetch", fetchMock);
+    try {
+      renderSheet();
+      fireEvent.click(screen.getByRole("button", { name: "Delete all data" }));
+      const dialog = (await screen.findByText("Delete everything?")).closest("[role=dialog]") as HTMLElement;
+      fireEvent.click(within(dialog).getByRole("button", { name: "Delete all" }));
+      await waitFor(() =>
+        expect(fetchMock.mock.calls.some((call) => String((call as unknown[])[0]).endsWith("/api/activity") && ((call as unknown[])[1] as RequestInit).method === "DELETE")).toBe(true),
+      );
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
   it("shows the Google account and signs out back to onboarding", async () => {
     const signOut = vi.fn(async () => {});
     useStore.setState({

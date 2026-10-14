@@ -6,12 +6,14 @@ import PillButton from "../../components/PillButton";
 import Sheet from "../../components/Sheet";
 import { toast } from "../../components/Toast";
 import { applyProfileLocale } from "../../i18n";
+import { deleteAllActivity } from "../../lib/activity";
 import { getPlan, redeemCode, setPlan as switchPlan } from "../../lib/api";
 import { selectAllOnFocus } from "../../lib/keyboard";
 import { download, toCSV, toJSON } from "../../lib/export";
 import type { AuthUser } from "../../lib/repo";
 import { energyUnit, formatEnergy } from "../../lib/stats";
 import { useStore } from "../../store";
+import HealthSection from "./HealthSection";
 
 interface SettingsSheetProps {
   open: boolean;
@@ -189,6 +191,8 @@ export default function SettingsSheet({ open, onClose, onRedo }: SettingsSheetPr
   const deleteAll = async () => {
     try {
       await repo.clearAll();
+      // Best effort: the Health data lives on the server and must not block local deletion.
+      void repo.getIdToken().catch(() => null).then((token) => deleteAllActivity(token));
     } catch {
       toast(t("errors.generic"));
       return;
@@ -330,6 +334,8 @@ export default function SettingsSheet({ open, onClose, onRedo }: SettingsSheetPr
               )}
             </Group>
           )}
+
+          <HealthSection />
 
           {repo.kind !== "local" && (
             <Group title={t("settings.account")}>
