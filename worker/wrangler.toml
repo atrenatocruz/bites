@@ -12,7 +12,7 @@ DAILY_LIMIT = "30"
 FREE_DAILY_LIMIT = "5"
 # SHA-256 hashes (comma separated) of codes that unlock the paid plan from Settings.
 REDEEM_CODE_HASHES = "33a476a898298d1ec4da66385586df87d236d7dc982d0743ade1786e5b3a9fa4"
-ALLOWED_ORIGINS = "https://bites.keyboardai-backend.workers.dev"
+ALLOWED_ORIGINS = "https://bites.wellbites.workers.dev"
 
 [ai]
 binding = "AI"
