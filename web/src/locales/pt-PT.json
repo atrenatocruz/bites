@@ -101,6 +101,27 @@
       "conditionNote": "Esta é uma estimativa geral. Confirma-a com o teu médico ou nutricionista."
     }
   },
+  "camera": {
+    "title": "Permitir acesso à câmara",
+    "body": "O Bites usa a câmara para fazer scan das tuas refeições. Permite agora uma vez, para não perguntar a meio de um scan.",
+    "allow": "Permitir câmara",
+    "skip": "Agora não",
+    "continue": "Continuar",
+    "tipTitle": "Toca em Permitir quando perguntar",
+    "tip": {
+      "ios": "Para o Safari deixar de perguntar de cada vez: toca em aA na barra de endereço, depois em Definições do Website, e põe a Câmara em Permitir.",
+      "android": "Escolhe Permitir e o navegador fica a lembrar-se.",
+      "other": "Escolhe Permitir e o navegador fica a lembrar-se."
+    },
+    "blockedTitle": "A câmara está bloqueada",
+    "blockedBody": "Podes na mesma adicionar refeições com fotografias ou a escrever, ou ativar a câmara e voltar cá.",
+    "fixTitle": "Como ativar",
+    "fix": {
+      "ios": "Toca em aA na barra de endereço do Safari, depois em Definições do Website, e põe a Câmara em Permitir. Depois recarrega a página.",
+      "android": "Toca no cadeado ao lado do endereço, depois em Permissões, e permite a Câmara.",
+      "other": "Abre as definições do site no teu navegador e permite a Câmara."
+    }
+  },
   "install": {
     "title": "Adiciona o Bites ao ecrã principal",
     "bodyAndroid": "Abre-o como qualquer outra app, em ecrã inteiro e sempre à distância de um toque.",

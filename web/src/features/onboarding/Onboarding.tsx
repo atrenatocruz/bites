@@ -3,8 +3,10 @@ import { useTranslation } from "react-i18next";
 import { kcalTarget, macroTargets, weeksToGoal, type Profile } from "@bites/shared";
 import { toast } from "../../components/Toast";
 import { applyProfileLocale } from "../../i18n";
+import { shouldOfferCamera } from "../../lib/camera";
 import { shouldOfferInstall } from "../../lib/install";
 import { useStore } from "../../store";
+import CameraScreen from "./CameraScreen";
 import InstallScreen from "./InstallScreen";
 import PlanReveal from "./PlanReveal";
 import Questions, { DEFAULT_ANSWERS, answersFrom, type Answers } from "./Questions";
@@ -16,14 +18,14 @@ interface OnboardingProps {
   onCancel?: () => void;
 }
 
-type Stage = "install" | "slides" | "questions" | "plan";
+type Stage = "install" | "camera" | "slides" | "questions" | "plan";
 
 const isPopupDismissed = (e: unknown) => ["auth/popup-closed-by-user", "auth/cancelled-popup-request"].includes((e as { code?: string })?.code ?? "");
 
 export default function Onboarding({ onDone, initial, onCancel }: OnboardingProps) {
   const { t } = useTranslation();
   const repo = useStore((s) => s.repo);
-  const [stage, setStage] = useState<Stage>(initial ? "questions" : shouldOfferInstall() ? "install" : "slides");
+  const [stage, setStage] = useState<Stage>(initial ? "questions" : shouldOfferInstall() ? "install" : shouldOfferCamera() ? "camera" : "slides");
   const [answers, setAnswers] = useState<Answers>(initial ? answersFrom(initial) : DEFAULT_ANSWERS);
   const [override, setOverride] = useState<number | null>(null);
   const [busy, setBusy] = useState(false);
@@ -108,7 +110,9 @@ export default function Onboarding({ onDone, initial, onCancel }: OnboardingProp
       setStage("questions");
     });
 
-  if (stage === "install") return <InstallScreen onDone={() => setStage("slides")} />;
+  if (stage === "install") return <InstallScreen onDone={() => setStage(shouldOfferCamera() ? "camera" : "slides")} />;
+
+  if (stage === "camera") return <CameraScreen onDone={() => setStage("slides")} />;
 
   if (stage === "slides") {
     return <Slides onDone={() => setStage("questions")} onSignIn={googleFlow ? () => void signInFromSlides() : undefined} notice={notice} busy={busy} />;

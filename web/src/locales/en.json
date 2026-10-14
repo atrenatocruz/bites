@@ -101,6 +101,27 @@
       "conditionNote": "This is a general estimate. Check it with your doctor or dietitian."
     }
   },
+  "camera": {
+    "title": "Allow camera access",
+    "body": "Bites uses your camera to scan your meals. Allow it once now so it doesn't ask in the middle of a scan.",
+    "allow": "Allow camera",
+    "skip": "Not now",
+    "continue": "Continue",
+    "tipTitle": "Tap Allow when asked",
+    "tip": {
+      "ios": "To stop Safari asking every time: tap aA in the address bar, then Website Settings, then set Camera to Allow.",
+      "android": "Choose Allow, and your browser remembers it.",
+      "other": "Choose Allow, and your browser remembers it."
+    },
+    "blockedTitle": "Camera is blocked",
+    "blockedBody": "You can still add meals from photos or by typing, or turn the camera on and come back.",
+    "fixTitle": "How to turn it on",
+    "fix": {
+      "ios": "Tap aA in Safari's address bar, then Website Settings, then set Camera to Allow. Reload the page afterwards.",
+      "android": "Tap the lock icon next to the address, then Permissions, then allow Camera.",
+      "other": "Open your browser's site settings for this page and allow Camera."
+    }
+  },
   "install": {
     "title": "Add Bites to your home screen",
     "bodyAndroid": "Open it like any other app, full screen and always one tap away.",
