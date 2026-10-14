@@ -95,14 +95,17 @@
     "streak": "{{count}} day streak",
     "weekdays": { "mon": "M", "tue": "T", "wed": "W", "thu": "T", "fri": "F", "sat": "S", "sun": "S" },
     "calendar": { "expand": "Show month", "collapse": "Hide month", "previous": "Previous", "next": "Next" },
-    "ring": { "remaining": "remaining", "over": "over", "of": "of {{target}} kcal" },
+    "ring": { "remaining": "remaining", "over": "over", "summary": "{{eaten}} of {{target}} {{unit}}" },
     "meals": "Meals",
     "noMeals": "Nothing logged yet.",
     "trends": {
       "title": "Trends",
       "week": "Week", "month": "Month", "year": "Year",
-      "average": "Average / day", "daysOnTarget": "Days on target", "streak": "Streak",
+      "average": "Average / day", "daysOnTarget": "On target", "streak": "Streak",
       "streakValue": "{{current}} / best {{best}}",
+      "best": "best {{count}}",
+      "ofLogged": "of {{count}} days",
+      "chartLabel": "{{period}} calories chart",
       "targetLine": "Target",
       "noData": "Not enough data yet."
     }

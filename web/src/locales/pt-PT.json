@@ -95,14 +95,17 @@
     "streak": "{{count}} dias seguidos",
     "weekdays": { "mon": "S", "tue": "T", "wed": "Q", "thu": "Q", "fri": "S", "sat": "S", "sun": "D" },
     "calendar": { "expand": "Mostrar mês", "collapse": "Ocultar mês", "previous": "Anterior", "next": "Seguinte" },
-    "ring": { "remaining": "restantes", "over": "a mais", "of": "de {{target}} kcal" },
+    "ring": { "remaining": "restantes", "over": "a mais", "summary": "{{eaten}} de {{target}} {{unit}}" },
     "meals": "Refeições",
     "noMeals": "Ainda nada registado.",
     "trends": {
       "title": "Tendências",
       "week": "Semana", "month": "Mês", "year": "Ano",
-      "average": "Média / dia", "daysOnTarget": "Dias no objetivo", "streak": "Sequência",
+      "average": "Média / dia", "daysOnTarget": "No objetivo", "streak": "Sequência",
       "streakValue": "{{current}} / melhor {{best}}",
+      "best": "melhor {{count}}",
+      "ofLogged": "de {{count}} dias",
+      "chartLabel": "Gráfico de calorias: {{period}}",
       "targetLine": "Objetivo",
       "noData": "Ainda não há dados suficientes."
     }
