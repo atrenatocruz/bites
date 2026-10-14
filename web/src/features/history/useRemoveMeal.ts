@@ -24,9 +24,12 @@ export function useRemoveMeal(onStart: () => void) {
         pending.current.delete(id);
       }
       useStore.getState().bump();
+      let undone = false;
       toast(t("history.deleted"), {
         label: t("common.undo"),
         onClick: () => {
+          if (undone) return;
+          undone = true;
           void repo.addMeal(data).then(() => useStore.getState().bump());
         },
       });

@@ -107,6 +107,19 @@ describe("HistoryScreen", () => {
     expect(restored.createdAt).toBe(at(1, 13).getTime());
   });
 
+  it("adds the meal back only once when Undo is tapped twice", async () => {
+    await setup();
+    fireEvent.click(screen.getByText("Salad"));
+    fireEvent.click(await screen.findByRole("button", { name: "Delete meal" }));
+    await waitFor(() => expect(screen.queryByText("Salad")).toBeNull());
+    const undo = await screen.findByRole("button", { name: "Undo" });
+    fireEvent.click(undo);
+    fireEvent.click(undo);
+    await screen.findByText("Salad");
+    await new Promise((r) => setTimeout(r, 50));
+    expect((await repo.listMeals()).filter((m) => m.title === "Salad")).toHaveLength(1);
+  });
+
   it("edits grams in the detail sheet and saves with edited:true", async () => {
     await setup();
     fireEvent.click(screen.getByText("Salad"));

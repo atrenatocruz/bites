@@ -62,7 +62,7 @@ export default function MonthCalendar({ month, days, target, selectedDay, todayK
               className="rounded-full active:opacity-60 disabled:opacity-35"
             >
               <MiniRing kcal={summary?.kcal} target={target} status={dayStatus(summary?.kcal, target)} size={36} stroke={3.5} filled={selected}>
-                <span className={`text-caption tabular !font-semibold ${selected ? "!text-bg" : key === todayKey ? "!text-accent" : "!text-fg"}`}>{parseKey(key).getDate()}</span>
+                <span className={`text-caption tabular !font-semibold ${selected ? "!text-bg" : key === todayKey ? "!text-accent-text" : "!text-fg"}`}>{parseKey(key).getDate()}</span>
               </MiniRing>
             </button>
           );

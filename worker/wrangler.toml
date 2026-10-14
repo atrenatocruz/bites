@@ -5,7 +5,7 @@ compatibility_flags = ["nodejs_compat"]
 
 [vars]
 AI_MODEL = "claude-sonnet-5-5"
-AUTH_MODE = "off"
+AUTH_MODE = "firebase"
 DAILY_LIMIT = "30"
 ALLOWED_ORIGINS = ""
 

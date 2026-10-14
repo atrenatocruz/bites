@@ -9,7 +9,7 @@ export async function verifyRequest(req: Request, env: Env): Promise<string | nu
   if (!token || !env.FIREBASE_PROJECT_ID) return null;
   try {
     const { payload } = await jwtVerify(token, JWKS, {
-      issuer: `https://securetoken.google.com/${env.FIREBASE_PROJECT_ID}`, audience: env.FIREBASE_PROJECT_ID,
+      issuer: `https://securetoken.google.com/${env.FIREBASE_PROJECT_ID}`, audience: env.FIREBASE_PROJECT_ID, algorithms: ["RS256"],
     });
     return typeof payload.sub === "string" ? payload.sub : null;
   } catch { return null; }

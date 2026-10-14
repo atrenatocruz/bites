@@ -44,7 +44,7 @@ export function Toaster() {
             {item.action && (
               <button
                 type="button"
-                className="font-semibold text-accent"
+                className="font-semibold text-accent-inverse"
                 onClick={() => {
                   item.action!.onClick();
                   clearTimeout(timer);

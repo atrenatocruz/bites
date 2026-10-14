@@ -29,6 +29,8 @@ import {
 } from "firebase/firestore";
 import type { DaySummary, Meal, Profile, Totals } from "@bites/shared";
 import type { AccountInfo, Repo } from "./types";
+import { commitLocal } from "./commit";
+import { mergeMeals } from "./merge";
 
 const BATCH_LIMIT = 400;
 
@@ -108,7 +110,7 @@ export class FirebaseRepo implements Repo {
 
   async saveProfile(p: Profile) {
     const { profile } = await this.refs();
-    await setDoc(profile, p);
+    await commitLocal(setDoc(profile, p));
   }
 
   async addMeal(m: Omit<Meal, "id">) {
@@ -117,7 +119,7 @@ export class FirebaseRepo implements Repo {
     const batch = writeBatch(this.db);
     batch.set(mealRef(meal.id), meal);
     await this.adjustDay(batch, meal.dayKey, meal.totals, 1);
-    await batch.commit();
+    await commitLocal(batch.commit());
     return meal;
   }
 
@@ -139,7 +141,7 @@ export class FirebaseRepo implements Repo {
       await this.adjustDay(batch, old.dayKey, neg(old.totals), -1);
       await this.adjustDay(batch, m.dayKey, m.totals, 1);
     }
-    await batch.commit();
+    await commitLocal(batch.commit());
   }
 
   async deleteMeal(id: string) {
@@ -150,7 +152,7 @@ export class FirebaseRepo implements Repo {
     const batch = writeBatch(this.db);
     batch.delete(mealRef(id));
     await this.adjustDay(batch, old.dayKey, neg(old.totals), -1);
-    await batch.commit();
+    await commitLocal(batch.commit());
   }
 
   async getMeal(id: string) {
@@ -193,9 +195,9 @@ export class FirebaseRepo implements Repo {
     for (let i = 0; i < refs.length; i += BATCH_LIMIT) {
       const batch = writeBatch(this.db);
       refs.slice(i, i + BATCH_LIMIT).forEach((r) => batch.delete(r));
-      await batch.commit();
+      await commitLocal(batch.commit());
     }
-    await deleteDoc(profile);
+    await commitLocal(deleteDoc(profile));
   }
 
   async getIdToken() {
@@ -216,8 +218,11 @@ export class FirebaseRepo implements Repo {
       await linkWithPopup(u, provider);
     } catch (e) {
       if ((e as { code?: string }).code !== "auth/credential-already-in-use") throw e;
+      const anonymous = await this.exportAll();
       await signInWithPopup(this.auth, provider);
       this.ready = null;
+      if (anonymous.meals.length > 0) await mergeMeals(this, anonymous.meals);
+      if (anonymous.profile && !(await this.getProfile())) await this.saveProfile(anonymous.profile);
     }
   }
 

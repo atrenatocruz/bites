@@ -4,6 +4,8 @@ import { useTranslation } from "react-i18next";
 import PillButton from "./components/PillButton";
 import { applyProfileLocale } from "./i18n";
 import { useStore } from "./store";
+import { useToday } from "./lib/useToday";
+import { useOnline } from "./lib/useOnline";
 import OfflineBanner from "./components/OfflineBanner";
 import TabBar from "./components/TabBar";
 import { Toaster } from "./components/Toast";
@@ -44,7 +46,7 @@ export default function App({ skipSplash = false }: AppProps) {
   return (
     <>
       {failed && <LoadError onRetry={() => setAttempt((n) => n + 1)} />}
-      {loaded && (profile ? <Shell /> : <Onboarding onDone={() => {}} />)}
+      {loaded && (profile ? <Shell /> : <main className="h-full"><Onboarding onDone={() => {}} /></main>)}
       <AnimatePresence>{!splashDone && <Splash onDone={() => setSplashDone(true)} />}</AnimatePresence>
     </>
   );
@@ -64,11 +66,14 @@ function LoadError({ onRetry }: { onRetry: () => void }) {
 }
 
 function Shell() {
+  const { t } = useTranslation();
   const tab = useStore((s) => s.tab);
   const profile = useStore((s) => s.profile);
   const reduce = useReducedMotion();
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [redo, setRedo] = useState(false);
+  useToday(useStore.getState().rollDay);
+  const online = useOnline();
 
   return (
     <div className="flex h-full flex-col bg-bg text-fg">
@@ -78,7 +83,7 @@ function Shell() {
           <motion.section
             key={tab}
             className={
-              tab === "scan" ? "absolute inset-0" : "absolute inset-0 flex overflow-y-auto px-5 pt-[env(safe-area-inset-top)]"
+              tab === "scan" ? "absolute inset-0" : `absolute inset-0 flex overflow-y-auto px-5 ${online ? "pt-[env(safe-area-inset-top)]" : ""}`
             }
             initial={{ opacity: 0, y: reduce ? 0 : 6 }}
             animate={{ opacity: 1, y: 0 }}
@@ -99,7 +104,7 @@ function Shell() {
         }}
       />
       {redo && profile && (
-        <div className="fixed inset-0 z-50 bg-bg">
+        <div role="dialog" aria-modal="true" aria-label={t("settings.profileRedo")} className="fixed inset-0 z-50 bg-bg">
           <Onboarding initial={profile} onDone={() => setRedo(false)} onCancel={() => setRedo(false)} />
         </div>
       )}

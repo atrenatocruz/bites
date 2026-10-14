@@ -19,7 +19,7 @@ const RESULT: AnalyzeResult = {
 const noop = async () => RESULT;
 function setup(over: Partial<React.ComponentProps<typeof ResultSheet>> = {}) {
   const addMeal = vi.fn(async (m) => ({ ...m, id: "m1" }));
-  useStore.setState({ repo: { addMeal } as never, tab: "scan", selectedDay: "2026-03-02", bump: vi.fn() });
+  useStore.setState({ repo: { addMeal } as never, tab: "scan", selectedDay: "2026-03-02", selectedDayPinned: true, bump: vi.fn() });
   const props = { open: true, result: RESULT, source: "photo" as const, thumb: "data:image/webp;base64,xx", hint: "", onClose: vi.fn(), onRetake: vi.fn(), onSaved: vi.fn(), reanalyze: noop, analyzeText: noop, ...over };
   render(<ResultSheet {...props} />);
   return { addMeal, props };
@@ -81,12 +81,21 @@ describe("ResultSheet", () => {
     expect(addMeal.mock.calls[0]![0].mealType).toBe("dinner");
   });
 
-  it("falls back to today when no day is selected", async () => {
+  it("saves to today when the selected day is not pinned", async () => {
     const { addMeal } = setup();
-    useStore.setState({ selectedDay: "" });
+    useStore.setState({ selectedDay: "2026-03-02", selectedDayPinned: false });
     fireEvent.click(screen.getByRole("button", { name: "Save" }));
     await waitFor(() => expect(addMeal).toHaveBeenCalled());
     expect(addMeal.mock.calls[0]![0].dayKey).toBe(dayKey(new Date()));
+    expect(screen.queryByText(/Adding to/)).toBeNull();
+  });
+
+  it("saves to the pinned day and says so", async () => {
+    const { addMeal } = setup();
+    expect(screen.getByText("Adding to Mon 2 Mar")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Save" }));
+    await waitFor(() => expect(addMeal).toHaveBeenCalled());
+    expect(addMeal.mock.calls[0]![0].dayKey).toBe("2026-03-02");
   });
 
   it("re-analyzes with the previous hint plus the answer", async () => {

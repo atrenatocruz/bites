@@ -13,6 +13,9 @@ export async function handleAnalyze(req: Request, env: Env, deps: Deps): Promise
   let body: AnalyzeRequest;
   try { body = await req.json(); } catch { return json({ error: "bad_request" }, 400); }
   if (!body || typeof body !== "object") return json({ error: "bad_request" }, 400);
+  if (body.hint !== undefined && typeof body.hint !== "string") return json({ error: "bad_request" }, 400);
+  if (body.text !== undefined && typeof body.text !== "string") return json({ error: "bad_request" }, 400);
+  if (body.localTime !== undefined && typeof body.localTime !== "string") return json({ error: "bad_request" }, 400);
   const hasImage = typeof body.image === "string" && body.image.length > 0;
   const hasText = typeof body.text === "string" && body.text.trim().length > 0;
   if ((!hasImage && !hasText) || (hasImage && body.image!.length > 2_000_000) || !["pt-PT", "en"].includes(body.locale))

@@ -68,6 +68,7 @@
   "result": {
     "addItem": "Adicionar item", "addItemTitle": "Adicionar um item", "remove": "Remover {{name}}", "gramsInput": "Gramas",
     "range": "entre {{low}} e {{high}}",
+    "addingTo": "A adicionar a {{date}}",
     "mealType": "Tipo de refeição",
     "items": "Ingredientes",
     "gramsStepper": "Gramas de {{name}}",
@@ -120,6 +121,7 @@
     "language": "Idioma", "languageSystem": "Sistema", "languagePt": "Português", "languageEn": "English",
     "units": "Unidades",
     "account": "Conta", "signIn": "Iniciar sessão com o Google", "signOut": "Terminar sessão", "anonymous": "Anónimo",
+    "mergeTitle": "Iniciar sessão com o Google?", "mergeBody": "As refeições neste dispositivo serão juntadas à tua conta Google.", "mergeConfirm": "Continuar",
     "exportCsv": "Exportar CSV", "exportJson": "Exportar JSON",
     "deleteAll": "Eliminar todos os dados",
     "deleteConfirmTitle": "Eliminar tudo?",

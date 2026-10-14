@@ -1,6 +1,8 @@
 import { useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Plus } from "lucide-react";
+import { format } from "date-fns";
+import { enUS, pt } from "date-fns/locale";
 import { dayKey, macroTargets, scaleItem, sumTotals, type AnalyzeResult, type FoodItem, type MealType } from "@bites/shared";
 import Sheet from "../../components/Sheet";
 import Ring from "../../components/Ring";
@@ -8,6 +10,7 @@ import PillButton from "../../components/PillButton";
 import { toast } from "../../components/Toast";
 import { useStore } from "../../store";
 import { ApiError, errorKey } from "../../lib/api";
+import { parseKey } from "../../lib/stats";
 import ItemEditor from "./ItemEditor";
 import TextEntry from "./TextEntry";
 
@@ -34,8 +37,11 @@ const MACROS = [
 ] as const;
 
 export default function ResultSheet({ open, result, source, thumb, hint, onClose, onRetake, onSaved, reanalyze, analyzeText }: ResultSheetProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const profile = useStore((s) => s.profile);
+  const pinnedDay = useStore((s) => (s.selectedDayPinned && s.selectedDay ? s.selectedDay : null));
+  const targetDay = pinnedDay ?? dayKey(new Date());
+  const isPt = i18n.language.startsWith("pt");
   const nextId = useRef(0);
   const toEntries = (items: FoodItem[]): Entry[] => items.map((base) => ({ id: nextId.current++, base, grams: base.grams }));
 
@@ -100,11 +106,11 @@ export default function ResultSheet({ open, result, source, thumb, hint, onClose
   const save = async () => {
     if (busy || items.length === 0 || totals.kcal === 0) return;
     setBusy("save");
-    const { repo, selectedDay, bump, setTab } = useStore.getState();
+    const { repo, selectedDay, selectedDayPinned, bump, setTab } = useStore.getState();
     try {
       await repo.addMeal({
         createdAt: Date.now(),
-        dayKey: selectedDay || dayKey(new Date()),
+        dayKey: selectedDayPinned && selectedDay ? selectedDay : dayKey(new Date()),
         mealType,
         title: current.title,
         thumb,
@@ -133,11 +139,17 @@ export default function ResultSheet({ open, result, source, thumb, hint, onClose
               type="button"
               onClick={cycleMeal}
               aria-label={`${t("result.mealType")}: ${t(`mealType.${mealType}`)}`}
-              className="shrink-0 rounded-full bg-elevated px-3 py-1.5 text-subhead font-medium text-accent transition-transform active:scale-95"
+              className="shrink-0 rounded-full bg-elevated px-3 py-1.5 text-subhead font-medium text-accent-text transition-transform active:scale-95"
             >
               {t(`mealType.${mealType}`)}
             </button>
           </div>
+
+          {pinnedDay && pinnedDay !== dayKey(new Date()) && (
+            <p className="px-5 pt-2 text-center text-caption">
+              {t("result.addingTo", { date: format(parseKey(targetDay), isPt ? "EEE'.,' d MMM'.'" : "EEE d MMM", { locale: isPt ? pt : enUS }) })}
+            </p>
+          )}
 
           <div className="px-5 pb-1 pt-4 text-center">
             <div className="text-hero" data-testid="hero-kcal">{totals.kcal}</div>
@@ -163,7 +175,7 @@ export default function ResultSheet({ open, result, source, thumb, hint, onClose
               <ItemEditor key={e.id} item={items[i]!} onGrams={(g) => setGrams(e.id, g)} onRemove={() => remove(e.id)} />
             ))}
           </ul>
-          <button type="button" onClick={() => setAdding(true)} className="mx-5 mt-1 flex h-11 items-center gap-2 self-start text-subhead font-medium text-accent">
+          <button type="button" onClick={() => setAdding(true)} className="mx-5 mt-1 flex h-11 items-center gap-2 self-start text-subhead font-medium text-accent-text">
             <Plus size={18} strokeWidth={1.75} aria-hidden="true" />
             {t("result.addItem")}
           </button>

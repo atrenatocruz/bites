@@ -76,6 +76,7 @@ export default function SettingsSheet({ open, onClose, onRedo }: SettingsSheetPr
   const repo = useStore((s) => s.repo);
   const profile = useStore((s) => s.profile);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [mergeOpen, setMergeOpen] = useState(false);
   const [account, setAccount] = useState<AccountInfo | null>(null);
   const [draft, setDraft] = useState("");
 
@@ -244,11 +245,11 @@ export default function SettingsSheet({ open, onClose, onRedo }: SettingsSheetPr
               <div className={rowClass}>
                 <span className="min-w-0 truncate text-body">{account?.anonymous === false ? (account.email ?? t("settings.account")) : t("settings.anonymous")}</span>
                 {account?.anonymous === false ? (
-                  <button type="button" className="shrink-0 text-body font-semibold text-accent active:opacity-60" onClick={() => void googleAction("signOut")}>
+                  <button type="button" className="shrink-0 text-body font-semibold text-accent-text active:opacity-60" onClick={() => void googleAction("signOut")}>
                     {t("settings.signOut")}
                   </button>
                 ) : (
-                  <button type="button" className="shrink-0 text-body font-semibold text-accent active:opacity-60" onClick={() => void googleAction("signInWithGoogle")}>
+                  <button type="button" className="shrink-0 text-body font-semibold text-accent-text active:opacity-60" onClick={() => setMergeOpen(true)}>
                     {t("settings.signIn")}
                   </button>
                 )}
@@ -273,6 +274,27 @@ export default function SettingsSheet({ open, onClose, onRedo }: SettingsSheetPr
             <p className="text-subhead tabular">{t("settings.version", { version: __APP_VERSION__ })}</p>
             <p className="mt-2 text-subhead text-fg-2">{t("settings.disclaimer")}</p>
           </section>
+        </div>
+      </Sheet>
+
+      <Sheet open={mergeOpen} onClose={() => setMergeOpen(false)}>
+        <div className="px-5 pb-6 text-center">
+          <h2 className="text-title">{t("settings.mergeTitle")}</h2>
+          <p className="mt-2 text-body text-fg-2">{t("settings.mergeBody")}</p>
+          <div className="mt-6 flex flex-col gap-2">
+            <PillButton
+              className="w-full"
+              onClick={() => {
+                setMergeOpen(false);
+                void googleAction("signInWithGoogle");
+              }}
+            >
+              {t("settings.mergeConfirm")}
+            </PillButton>
+            <PillButton variant="text" className="w-full" onClick={() => setMergeOpen(false)}>
+              {t("common.cancel")}
+            </PillButton>
+          </div>
         </div>
       </Sheet>
 

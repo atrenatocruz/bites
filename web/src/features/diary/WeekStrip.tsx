@@ -70,7 +70,7 @@ export default function WeekStrip({ weekStart, days, target, selectedDay, todayK
             >
               <span className={`text-caption ${selected ? "!text-fg" : ""}`}>{t(`diary.weekdays.${wd}`)}</span>
               <MiniRing kcal={summary?.kcal} target={target} status={dayStatus(summary?.kcal, target)} size={40} stroke={4} filled={selected}>
-                <span className={`text-subhead tabular font-semibold ${selected ? "text-bg" : key === todayKey ? "text-accent" : ""}`}>{date.getDate()}</span>
+                <span className={`text-subhead tabular font-semibold ${selected ? "text-bg" : key === todayKey ? "text-accent-text" : ""}`}>{date.getDate()}</span>
               </MiniRing>
             </button>
           );

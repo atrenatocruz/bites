@@ -33,10 +33,12 @@ export function normalizeAiOutput(raw: unknown): AnalyzeResult {
   const lo = clamp(o.kcal_range?.low, 0, 20000), hi = clamp(o.kcal_range?.high, 0, 20000);
   const mt = o.meal_type_guess === "drink" ? "snack" : MEAL_TYPES.includes(o.meal_type_guess) ? o.meal_type_guess : "snack";
 
+  const low = Math.round(Math.min(lo, hi)), high = Math.round(Math.max(lo, hi));
+
   return {
     isFood: o.is_food && items.length > 0,
     title: str(o.meal_title, 60), mealType: mt, items, totals,
-    kcalRange: { low: Math.round(Math.min(lo, hi)), high: Math.round(Math.max(lo, hi)) },
+    kcalRange: { low: Math.min(low, totals.kcal), high: Math.max(high, totals.kcal) },
     confidence: r1(clamp(o.overall_confidence, 0, 1)),
     scaleReference: nstr(o.scale_reference_used, 80),
     followUpQuestion: nstr(o.follow_up_question, 140),

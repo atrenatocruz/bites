@@ -44,4 +44,11 @@ describe("normalizeAiOutput", () => {
     expect(() => normalizeAiOutput({ foo: 1 })).toThrow(NormalizeError);
     expect(() => normalizeAiOutput(null)).toThrow(NormalizeError);
   });
+  it("widens kcalRange so the recomputed total sits inside it", () => {
+    const low = normalizeAiOutput({ ...raw, kcal_range: { low: 100, high: 200 } });
+    expect(low.totals.kcal).toBeGreaterThan(200);
+    expect(low.kcalRange).toEqual({ low: 100, high: low.totals.kcal });
+    const high = normalizeAiOutput({ ...raw, kcal_range: { low: 5000, high: 6000 } });
+    expect(high.kcalRange).toEqual({ low: high.totals.kcal, high: 6000 });
+  });
 });

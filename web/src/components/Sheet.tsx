@@ -1,4 +1,4 @@
-import { useRef, type ReactNode } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
 import { AnimatePresence, motion, useDragControls, useReducedMotion } from "framer-motion";
 import { useTranslation } from "react-i18next";
 
@@ -9,6 +9,8 @@ interface SheetProps {
   snap?: "auto" | "full";
 }
 
+const stack: symbol[] = [];
+
 const SPRING = { type: "spring", stiffness: 400, damping: 34 } as const;
 
 export default function Sheet({ open, onClose, children, snap = "auto" }: SheetProps) {
@@ -17,6 +19,30 @@ export default function Sheet({ open, onClose, children, snap = "auto" }: SheetP
   const controls = useDragControls();
   const pressAt = useRef<{ x: number; y: number } | null>(null);
   const dragged = useRef(false);
+  const dialog = useRef<HTMLDivElement>(null);
+  const close = useRef(onClose);
+  close.current = onClose;
+
+  useEffect(() => {
+    if (!open) return;
+    const id = Symbol("sheet");
+    stack.push(id);
+    const previous = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    dialog.current?.focus({ preventScroll: true });
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && stack[stack.length - 1] === id) {
+        e.stopPropagation();
+        close.current();
+      }
+    };
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      stack.splice(stack.indexOf(id), 1);
+      if (previous?.isConnected) previous.focus({ preventScroll: true });
+    };
+  }, [open]);
+
   return (
     <AnimatePresence>
       {open && (
@@ -30,9 +56,11 @@ export default function Sheet({ open, onClose, children, snap = "auto" }: SheetP
             aria-hidden="true"
           />
           <motion.div
+            ref={dialog}
             role="dialog"
             aria-modal="true"
-            className={`absolute inset-x-0 bottom-0 flex flex-col rounded-t-sheet bg-bg pb-[env(safe-area-inset-bottom)] shadow-[0_-8px_40px_rgba(0,0,0,0.12)] ${snap === "full" ? "h-[calc(100%-env(safe-area-inset-top)-16px)]" : "max-h-[92%]"}`}
+            tabIndex={-1}
+            className={`absolute outline-none inset-x-0 bottom-0 flex flex-col rounded-t-sheet bg-bg pb-[env(safe-area-inset-bottom)] shadow-[0_-8px_40px_rgba(0,0,0,0.12)] ${snap === "full" ? "h-[calc(100%-env(safe-area-inset-top)-16px)]" : "max-h-[92%]"}`}
             initial={reduce ? { opacity: 0 } : { y: "100%" }}
             animate={reduce ? { opacity: 1 } : { y: 0 }}
             exit={reduce ? { opacity: 0 } : { y: "100%" }}

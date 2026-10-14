@@ -9,13 +9,13 @@ Bites é uma app para contar calorias: apontas a câmara para o prato, a IA esti
 Para experimentar no teu computador:
 
 1. `npm install`
-2. `cp worker/.dev.vars.example worker/.dev.vars` (já vem com `MOCK_AI=1`, por isso não gasta dinheiro nem precisa de chave da Anthropic)
+2. `cp worker/.dev.vars.example worker/.dev.vars` (já vem com `MOCK_AI=1`, por isso não gasta dinheiro nem precisa de chave da Anthropic, e com `AUTH_MODE=off`, para o servidor local não exigir login)
 3. `npm run dev` e abre o endereço indicado no terminal.
 4. No telemóvel a câmara só funciona com HTTPS: corre `npx cloudflared tunnel --url http://localhost:5173` e abre o endereço `https://...` que aparecer.
 
 Para pôr online, segue as secções "Setup guides" abaixo (Anthropic, KV, Firebase, Cloudflare Pages).
 
-**Importante antes de publicar:** em `worker/wrangler.toml` tens de pôr `AUTH_MODE = "firebase"` e `FIREBASE_PROJECT_ID = "o-teu-projeto"`. Com `AUTH_MODE = "off"` o servidor confia num identificador de dispositivo enviado pelo cliente, e qualquer pessoa consegue contornar o limite diário de scans (e gastar a tua chave).
+**Importante antes de publicar:** `worker/wrangler.toml` já vem com `AUTH_MODE = "firebase"`; só tens de pôr `FIREBASE_PROJECT_ID = "o-teu-projeto"`. O modo `AUTH_MODE=off` só existe em `worker/.dev.vars` (desenvolvimento local). Com `AUTH_MODE = "off"` o servidor confia num identificador de dispositivo enviado pelo cliente, e qualquer pessoa consegue contornar o limite diário de scans (e gastar a tua chave).
 
 ---
 
@@ -35,7 +35,7 @@ Monorepo (npm workspaces):
 
 ```bash
 npm install
-cp worker/.dev.vars.example worker/.dev.vars   # MOCK_AI=1 returns canned results, no API key needed
+cp worker/.dev.vars.example worker/.dev.vars   # MOCK_AI=1 returns canned results, no API key needed; AUTH_MODE=off skips Firebase auth locally
 npm run dev                                    # worker on :8787, web on :5173 (proxies /api)
 ```
 
@@ -57,8 +57,8 @@ npm run build -w web
 
 ## Production configuration (read this first)
 
-> **Warning: production must set `AUTH_MODE = "firebase"` and `FIREBASE_PROJECT_ID` in `worker/wrangler.toml`.**
-> `AUTH_MODE = "off"` is for local development only. It trusts a device id supplied by the client, so anyone can send a new id with every request and bypass the daily scan limit, running up your Anthropic bill. With `AUTH_MODE = "firebase"` the Worker verifies the Firebase ID token and rate limits by the verified user id.
+> **Warning: `worker/wrangler.toml` defaults to `AUTH_MODE = "firebase"`; production must keep it and set `FIREBASE_PROJECT_ID`.**
+> `AUTH_MODE = "off"` is for local development only and lives in `worker/.dev.vars` (copied from `.dev.vars.example`), never in `wrangler.toml`. It trusts a device id supplied by the client, so anyone can send a new id with every request and bypass the daily scan limit, running up your Anthropic bill. With `AUTH_MODE = "firebase"` the Worker verifies the Firebase ID token and rate limits by the verified user id.
 
 ```toml
 [vars]
@@ -107,7 +107,7 @@ Paste the printed ids into `kv_namespaces` in `worker/wrangler.toml` (`id` and `
    ```
 
    Without these variables the app stores everything locally in the browser.
-5. Set `AUTH_MODE = "firebase"` and `FIREBASE_PROJECT_ID` in `worker/wrangler.toml` (see the warning above).
+5. Keep `AUTH_MODE = "firebase"` and set `FIREBASE_PROJECT_ID` in `worker/wrangler.toml` (see the warning above).
 6. Deploy the security rules (they only let a user read and write their own `users/{uid}` data):
 
    ```bash

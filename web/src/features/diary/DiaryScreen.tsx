@@ -33,9 +33,7 @@ export default function DiaryScreen({ onOpenSettings }: DiaryScreenProps) {
   const selectedDay = useStore((s) => s.selectedDay);
   const setSelectedDay = useStore((s) => s.setSelectedDay);
 
-  const todayKey = useToday((previous, next) => {
-    if (useStore.getState().selectedDay === previous) useStore.getState().setSelectedDay(next);
-  });
+  const todayKey = useToday();
   const [weekStart, setWeekStart] = useState(() => mondayOf(selectedDay));
   const [month, setMonth] = useState(() => firstOfMonth(selectedDay));
   const [calendarOpen, setCalendarOpen] = useState(false);

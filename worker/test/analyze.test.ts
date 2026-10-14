@@ -96,4 +96,13 @@ describe("handleAnalyze", () => {
     expect(r.status).toBe(502);
     expect(await r.json()).toEqual({ error: "upstream" });
   });
+  it("400 when hint, text or localTime are not strings, before counting the rate limit", async () => {
+    const env = makeEnv({ DAILY_LIMIT: "1" });
+    for (const bad of [{ hint: 5 }, { text: { a: 1 } }, { localTime: 1300 }]) {
+      const r = await handleAnalyze(post({ ...ok, ...bad }), env, makeDeps());
+      expect(r.status).toBe(400);
+    }
+    const r = await handleAnalyze(post(ok), env, makeDeps());
+    expect(r.status).toBe(200);
+  });
 });

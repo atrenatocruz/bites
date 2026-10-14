@@ -84,7 +84,7 @@ export default function MealDetailSheet({ open, meal, onClose, onDelete }: MealD
             type="button"
             onClick={cycleMeal}
             aria-label={`${t("result.mealType")}: ${t(`mealType.${mealType}`)}`}
-            className="shrink-0 rounded-full bg-elevated px-3 py-1.5 text-subhead font-medium text-accent transition-transform active:scale-95"
+            className="shrink-0 rounded-full bg-elevated px-3 py-1.5 text-subhead font-medium text-accent-text transition-transform active:scale-95"
           >
             {t(`mealType.${mealType}`)}
           </button>

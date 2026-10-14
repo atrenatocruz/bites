@@ -7,6 +7,9 @@
   --fg-secondary: #6e6e73;
   --separator: #e5e5ea;
   --accent: #ff5a1f;
+  --on-accent: #ffffff;
+  --accent-text: #c2410c;
+  --accent-inverse: #ff5a1f;
   --protein: #0a84ff;
   --carbs: #ffb800;
   --fat: #af52de;
@@ -24,6 +27,9 @@
     --fg-secondary: #98989d;
     --separator: #38383a;
     --accent: #ff6a33;
+    --on-accent: #000000;
+    --accent-text: #ff6a33;
+    --accent-inverse: #c2410c;
     --protein: #409cff;
     --carbs: #ffc933;
     --fat: #bf5af2;
@@ -40,6 +46,9 @@
   --color-elevated: var(--bg-elevated);
   --color-sep: var(--separator);
   --color-accent: var(--accent);
+  --color-on-accent: var(--on-accent);
+  --color-accent-text: var(--accent-text);
+  --color-accent-inverse: var(--accent-inverse);
   --color-protein: var(--protein);
   --color-carbs: var(--carbs);
   --color-fat: var(--fat);
@@ -68,6 +77,12 @@ body {
 .text-large-title { font-size: 34px; line-height: 41px; font-weight: 700; }
 .text-title { font-size: 22px; line-height: 28px; font-weight: 700; }
 .text-headline { font-size: 17px; line-height: 22px; font-weight: 600; }
+.pill-primary { color: var(--on-accent); font-size: 19px; line-height: 24px; font-weight: 700; }
+
+@media (prefers-color-scheme: dark) {
+  .pill-primary { font-size: 17px; line-height: 22px; font-weight: 600; }
+}
+
 .text-body { font-size: 17px; line-height: 22px; font-weight: 400; }
 .text-subhead { font-size: 15px; line-height: 20px; font-weight: 400; }
 .text-caption { font-size: 12px; line-height: 16px; font-weight: 500; color: var(--fg-secondary); }
