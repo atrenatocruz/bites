@@ -115,4 +115,19 @@ describe("HealthSection", () => {
     expect(await screen.findByText(/See your workouts/)).toBeTruthy();
     expect(screen.queryByRole("button", { name: "Connect Apple Health" })).toBeNull();
   });
+
+  it("shows Connect without the Shortcut link when opened with the hidden setup link", async () => {
+    ios();
+    vi.stubEnv("VITE_HEALTH_SHORTCUT_URL", "");
+    vi.stubGlobal("fetch", vi.fn(notConnected));
+    window.history.replaceState({}, "", "/?health=setup");
+    try {
+      render(<HealthSection />);
+      fireEvent.click(await screen.findByRole("button", { name: "Connect Apple Health" }));
+      expect(await screen.findByText("KEY123")).toBeTruthy();
+      expect(screen.queryByRole("link", { name: "Add the Shortcut" })).toBeNull();
+    } finally {
+      window.history.replaceState({}, "", "/");
+    }
+  });
 });

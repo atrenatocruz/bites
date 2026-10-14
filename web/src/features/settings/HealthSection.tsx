@@ -4,7 +4,7 @@ import { enUS, pt } from "date-fns/locale";
 import { useTranslation } from "react-i18next";
 import { dayKey } from "@bites/shared";
 import { toast } from "../../components/Toast";
-import { createKey, deleteKey, fetchActivity, healthAvailable, runShortcutUrl, shortcutUrl } from "../../lib/activity";
+import { createKey, deleteKey, fetchActivity, healthAvailable, healthSetupMode, runShortcutUrl, shortcutUrl } from "../../lib/activity";
 import { useStore } from "../../store";
 import HealthGuide from "./HealthGuide";
 
@@ -39,6 +39,7 @@ export default function HealthSection() {
   const [guideOpen, setGuideOpen] = useState(false);
   const available = healthAvailable();
   const link = shortcutUrl();
+  const canConnect = link !== "" || healthSetupMode();
 
   useEffect(() => {
     if (!available) return;
@@ -135,7 +136,7 @@ export default function HealthSection() {
                 {t("settings.health.syncNow")}
               </a>
             )}
-            {!started && !connected && link && status && (
+            {!started && !connected && canConnect && status && (
               <button type="button" disabled={busy} className={`${linkClass} disabled:opacity-50`} onClick={connect}>
                 {status.hasKey ? t("settings.health.showKey") : t("settings.health.connect")}
               </button>

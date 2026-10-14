@@ -56,7 +56,7 @@ If **Workouts** is not offered as a Health sample type on your iOS version, skip
 
 ## Getting your own key before the button is live
 
-The developer gives you a preview build of Bites. In it, open Settings → Apple Health → Connect Apple Health. The key is copied (or shown with a Copy button); paste it into the empty Text action from step 1.
+On the iPhone, open `https://bites.wellbites.workers.dev/?health=setup` in Safari and sign in. Settings → Apple Health → **Connect Apple Health** copies your key (or shows it with a Copy button). Paste it into the empty Text action from step 1. Without `?health=setup`, the Connect button stays hidden until the web build has the iCloud link.
 
 ## Checking the numbers
 

@@ -15,6 +15,8 @@ export interface Deficit { burned: number; eaten: number; deficit: number; estim
 
 /** The shared iCloud link to the Shortcut; empty until the owner has built and shared it. */
 export const shortcutUrl = (): string => import.meta.env.VITE_HEALTH_SHORTCUT_URL ?? "";
+/** Opening the app with ?health=setup shows Connect before the Shortcut link exists, so the owner can get a key to build it. */
+export const healthSetupMode = () => typeof location !== "undefined" && new URLSearchParams(location.search).get("health") === "setup";
 export const runShortcutUrl = () => `shortcuts://run-shortcut?name=${encodeURIComponent(SHORTCUT_NAME)}`;
 /** Apple Health can only be reached through Shortcuts, which exist on iPhone and iPad. */
 export const healthAvailable = () => detectPlatform() === "ios";
