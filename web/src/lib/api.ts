@@ -64,7 +64,7 @@ export function errorKey(e: unknown): string {
 
 export interface PlanInfo { plan: "free" | "paid"; dailyLimit: number; unlocked: boolean }
 
-async function authedJson<T>(path: string, init: RequestInit, token: string | null): Promise<{ ok: boolean; status: number; body: (T & { error?: string }) | null }> {
+export async function authedJson<T>(path: string, init: RequestInit, token: string | null): Promise<{ ok: boolean; status: number; body: (T & { error?: string }) | null }> {
   const headers: Record<string, string> = { "content-type": "application/json", "x-device-id": deviceId() };
   if (token) headers.authorization = `Bearer ${token}`;
   const res = await fetch(`${BASE}${path}`, { ...init, headers });
