@@ -18,9 +18,10 @@ interface MonthCalendarProps {
   locale: Locale;
   onSelect: (key: string) => void;
   onShift: (months: number) => void;
+  workoutDays?: Set<string>;
 }
 
-export default function MonthCalendar({ month, days, target, selectedDay, todayKey, streak, locale, onSelect, onShift }: MonthCalendarProps) {
+export default function MonthCalendar({ month, days, target, selectedDay, todayKey, streak, locale, onSelect, onShift, workoutDays }: MonthCalendarProps) {
   const { t } = useTranslation();
   const first = parseKey(month);
   const count = new Date(first.getFullYear(), first.getMonth() + 1, 0).getDate();
@@ -57,13 +58,14 @@ export default function MonthCalendar({ month, days, target, selectedDay, todayK
               type="button"
               disabled={future}
               aria-pressed={selected}
-              aria-label={format(parseKey(key), "EEEE, d MMMM", { locale })}
+              aria-label={workoutDays?.has(key) ? t("activity.workoutDay", { date: format(parseKey(key), "EEEE, d MMMM", { locale }) }) : format(parseKey(key), "EEEE, d MMMM", { locale })}
               onClick={() => onSelect(key)}
-              className="rounded-full active:opacity-60 disabled:opacity-35"
+              className="flex flex-col items-center gap-0.5 rounded-full active:opacity-60 disabled:opacity-35"
             >
               <MiniRing kcal={summary?.kcal} target={target} status={dayStatus(summary?.kcal, target)} size={36} stroke={3.5} filled={selected}>
                 <span className={`text-caption tabular !font-semibold ${selected ? "!text-bg" : key === todayKey ? "!text-accent-text" : "!text-fg"}`}>{parseKey(key).getDate()}</span>
               </MiniRing>
+              <span aria-hidden="true" className={`size-1 rounded-full ${workoutDays?.has(key) ? "bg-accent" : "bg-transparent"}`} />
             </button>
           );
         })}

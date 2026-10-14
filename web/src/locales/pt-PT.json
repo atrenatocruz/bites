@@ -201,6 +201,22 @@
       "noData": "Ainda não há dados suficientes."
     }
   },
+  "activity": {
+    "title": "Atividade",
+    "burned": "Gasto",
+    "ate": "Comido",
+    "deficit": "Défice",
+    "surplus": "Excedente",
+    "soFar": "até agora",
+    "estimated": "estimado",
+    "noWorkouts": "Sem treinos",
+    "noData": "Sem dados da app Saúde para este dia.",
+    "synced": "Sincronizado {{when}}",
+    "neverSynced": "Ainda não sincronizado",
+    "sync": "Sincronizar",
+    "workoutLine": "{{time}} · {{minutes}} min",
+    "workoutDay": "{{date}}, treino"
+  },
   "settings": {
     "increase": "Aumentar {{name}}", "decrease": "Diminuir {{name}}",
     "title": "Definições",

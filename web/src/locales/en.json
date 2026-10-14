@@ -201,6 +201,22 @@
       "noData": "Not enough data yet."
     }
   },
+  "activity": {
+    "title": "Activity",
+    "burned": "Burned",
+    "ate": "Ate",
+    "deficit": "Deficit",
+    "surplus": "Surplus",
+    "soFar": "so far",
+    "estimated": "estimated",
+    "noWorkouts": "No workouts",
+    "noData": "No Health data for this day.",
+    "synced": "Synced {{when}}",
+    "neverSynced": "Not synced yet",
+    "sync": "Sync",
+    "workoutLine": "{{time}} · {{minutes}} min",
+    "workoutDay": "{{date}}, workout"
+  },
   "settings": {
     "increase": "Increase {{name}}", "decrease": "Decrease {{name}}",
     "title": "Settings",

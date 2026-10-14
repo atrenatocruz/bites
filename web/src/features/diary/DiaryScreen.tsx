@@ -11,6 +11,8 @@ import { useToday } from "../../lib/useToday";
 import { currentStreak, energyUnit, formatEnergy, parseKey, shiftKey } from "../../lib/stats";
 import MealDetailSheet from "../history/MealDetailSheet";
 import { useRemoveMeal } from "../history/useRemoveMeal";
+import { useActivity } from "../../lib/activity";
+import ActivityCard from "./ActivityCard";
 import DayCard from "./DayCard";
 import MonthCalendar from "./MonthCalendar";
 import Trends from "./Trends";
@@ -55,6 +57,12 @@ export default function DiaryScreen({ onOpenSettings }: DiaryScreenProps) {
   const years = [Number(todayKey.slice(0, 4)), Number(selectedDay.slice(0, 4)), Number(month.slice(0, 4)), Number(weekStart.slice(0, 4))];
   const fromKey = `${Math.min(...years) - 1}-01-01`;
   const toKey = `${Math.max(...years)}-12-31`;
+  const activity = useActivity(fromKey, toKey, () => repo.getIdToken());
+  const connected = activity?.lastSync != null;
+  const workoutDays = useMemo(
+    () => new Set(Object.entries(activity?.days ?? {}).filter(([, d]) => d.workouts.length > 0).map(([k]) => k)),
+    [activity],
+  );
 
   useEffect(() => {
     let live = true;
@@ -120,6 +128,7 @@ export default function DiaryScreen({ onOpenSettings }: DiaryScreenProps) {
                 locale={locale}
                 onSelect={select}
                 onShift={(n) => setMonth((m) => firstOfMonth(shiftKey(m, n > 0 ? 32 : -1)))}
+                workoutDays={workoutDays}
               />
             </motion.div>
           ) : (
@@ -133,6 +142,7 @@ export default function DiaryScreen({ onOpenSettings }: DiaryScreenProps) {
                 locale={locale}
                 onSelect={select}
                 onShift={(n) => setWeekStart((w) => shiftKey(w, n * 7))}
+                workoutDays={workoutDays}
               />
             </motion.div>
           )}
@@ -142,6 +152,19 @@ export default function DiaryScreen({ onOpenSettings }: DiaryScreenProps) {
       <div className="mt-5">
         <DayCard summary={days.get(selectedDay)} target={target} macros={macros} units={units} />
       </div>
+
+      {connected && (
+        <ActivityCard
+          day={activity?.days[selectedDay]}
+          eatenKcal={days.get(selectedDay)?.kcal ?? 0}
+          isToday={selectedDay === todayKey}
+          lastSync={activity?.lastSync ?? null}
+          profile={profile}
+          year={Number(selectedDay.slice(0, 4))}
+          units={units}
+          locale={locale}
+        />
+      )}
 
       <section className="mt-8">
         <h2 className="text-title">{t("diary.meals")}</h2>

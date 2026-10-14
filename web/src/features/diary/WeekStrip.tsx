@@ -18,9 +18,10 @@ interface WeekStripProps {
   locale: Locale;
   onSelect: (key: string) => void;
   onShift: (weeks: number) => void;
+  workoutDays?: Set<string>;
 }
 
-export default function WeekStrip({ weekStart, days, target, selectedDay, todayKey, locale, onSelect, onShift }: WeekStripProps) {
+export default function WeekStrip({ weekStart, days, target, selectedDay, todayKey, locale, onSelect, onShift, workoutDays }: WeekStripProps) {
   const { t } = useTranslation();
   const reduce = useReducedMotion();
   const dir = useRef(0);
@@ -64,7 +65,7 @@ export default function WeekStrip({ weekStart, days, target, selectedDay, todayK
               type="button"
               disabled={future}
               aria-pressed={selected}
-              aria-label={format(date, "EEEE, d MMMM", { locale })}
+              aria-label={workoutDays?.has(key) ? t("activity.workoutDay", { date: format(date, "EEEE, d MMMM", { locale }) }) : format(date, "EEEE, d MMMM", { locale })}
               onClick={() => onSelect(key)}
               className="flex flex-col items-center gap-1.5 rounded-2xl px-1 py-1 transition-opacity active:opacity-60 disabled:opacity-35"
             >
@@ -72,6 +73,7 @@ export default function WeekStrip({ weekStart, days, target, selectedDay, todayK
               <MiniRing kcal={summary?.kcal} target={target} status={dayStatus(summary?.kcal, target)} size={40} stroke={4} filled={selected}>
                 <span className={`text-subhead tabular font-semibold ${selected ? "text-bg" : key === todayKey ? "text-accent-text" : ""}`}>{date.getDate()}</span>
               </MiniRing>
+              <span aria-hidden="true" className={`size-1 rounded-full ${workoutDays?.has(key) ? "bg-accent" : "bg-transparent"}`} />
             </button>
           );
         })}
