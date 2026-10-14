@@ -190,6 +190,7 @@
     "meals": "Refeições",
     "noMeals": "Ainda nada registado.",
     "trends": {
+      "avgDeficit": "Défice médio", "workouts": "Treinos", "perDay": "{{unit}} / dia",
       "title": "Tendências",
       "week": "Semana", "month": "Mês", "year": "Ano",
       "average": "Média / dia", "daysOnTarget": "No objetivo", "streak": "Sequência",

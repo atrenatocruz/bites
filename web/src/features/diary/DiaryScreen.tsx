@@ -195,7 +195,7 @@ export default function DiaryScreen({ onOpenSettings }: DiaryScreenProps) {
         )}
       </section>
 
-      <Trends days={summaries} anchor={selectedDay} target={target} units={units} streak={streak} locale={locale} />
+      <Trends days={summaries} anchor={selectedDay} target={target} units={units} streak={streak} locale={locale} activity={connected ? activity?.days : undefined} profile={profile} />
 
       {selectedMeal && <MealDetailSheet key={selectedMeal.id} open={detailOpen} meal={selectedMeal} onClose={() => setDetailOpen(false)} onDelete={(m) => void remove(m)} />}
     </div>

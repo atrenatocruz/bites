@@ -3,7 +3,8 @@ import { useReducedMotion } from "framer-motion";
 import { format } from "date-fns";
 import type { Locale } from "date-fns";
 import { useTranslation } from "react-i18next";
-import type { DaySummary } from "@bites/shared";
+import type { DaySummary, HealthDay } from "@bites/shared";
+import { periodActivity, type BodyProfile } from "../../lib/activity";
 import { averageKcal, bestStreak, daysOnTarget, energyUnit, formatEnergy, monthlyAverages, parseKey, rangeFor, shiftKey } from "../../lib/stats";
 
 const TrendsChart = lazy(() => import("./TrendsChart"));
@@ -18,6 +19,8 @@ interface TrendsProps {
   units: "kcal" | "kj";
   streak: number;
   locale: Locale;
+  activity?: Record<string, HealthDay>;
+  profile?: BodyProfile | null;
 }
 
 function Stat({ title, value, caption }: { title: string; value: string; caption?: string }) {
@@ -30,7 +33,7 @@ function Stat({ title, value, caption }: { title: string; value: string; caption
   );
 }
 
-export default function Trends({ days, anchor, target, units, streak, locale }: TrendsProps) {
+export default function Trends({ days, anchor, target, units, streak, locale, activity, profile }: TrendsProps) {
   const { t } = useTranslation();
   const reduce = useReducedMotion();
   const [period, setPeriod] = useState<Period>("week");
@@ -53,6 +56,7 @@ export default function Trends({ days, anchor, target, units, streak, locale }: 
 
   const unit = energyUnit(units);
   const hasData = inRange.length > 0;
+  const health = useMemo(() => (activity ? periodActivity(activity, inRange, from, to, profile ?? null) : null), [activity, inRange, from, to, profile]);
 
   return (
     <section className="mt-8">
@@ -86,6 +90,16 @@ export default function Trends({ days, anchor, target, units, streak, locale }: 
         <Stat title={t("diary.trends.daysOnTarget")} value={String(daysOnTarget(inRange, target))} caption={t("diary.trends.ofLogged", { count: inRange.length })} />
         <Stat title={t("diary.trends.streak")} value={`${streak > 0 ? "🔥 " : ""}${streak}`} caption={t("diary.trends.best", { count: bestStreak(days) })} />
       </div>
+      {health && (
+        <div className="mt-2 flex gap-2">
+          <Stat
+            title={t("diary.trends.avgDeficit")}
+            value={health.avgDeficit === null ? "–" : health.avgDeficit < 0 ? `+${formatEnergy(-health.avgDeficit, units)}` : formatEnergy(health.avgDeficit, units)}
+            caption={t("diary.trends.perDay", { unit })}
+          />
+          <Stat title={t("diary.trends.workouts")} value={String(health.workouts)} />
+        </div>
+      )}
     </section>
   );
 }

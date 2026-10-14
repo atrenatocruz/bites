@@ -190,6 +190,7 @@
     "meals": "Meals",
     "noMeals": "Nothing logged yet.",
     "trends": {
+      "avgDeficit": "Avg deficit", "workouts": "Workouts", "perDay": "{{unit}} / day",
       "title": "Trends",
       "week": "Week", "month": "Month", "year": "Year",
       "average": "Average / day", "daysOnTarget": "On target", "streak": "Streak",

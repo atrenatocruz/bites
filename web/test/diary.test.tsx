@@ -37,6 +37,33 @@ describe("DiaryScreen", () => {
   });
   afterEach(cleanup);
 
+  it("shows the average deficit and workouts in Trends once Health is connected", async () => {
+    vi.stubGlobal("navigator", { ...navigator, userAgent: "iPhone", onLine: true });
+    const today = dayKey(new Date());
+    const yesterday = dayKey(at(1, 12));
+    const activity = {
+      days: {
+        [today]: { restingKcal: 1700, activeKcal: 800, workouts: [{ type: "Running", start: new Date().toISOString(), minutes: 30, kcal: 300 }] },
+        [yesterday]: { restingKcal: 1700, activeKcal: 300, workouts: [] }, // no meals logged: left out of the average
+      },
+      lastSync: { syncedAt: Date.now(), tz: "UTC" },
+      hasKey: true,
+    };
+    vi.stubGlobal("fetch", vi.fn(async () => new Response(JSON.stringify(activity), { status: 200 })));
+    try {
+      await repo.addMeal(mk("Lunch", at(0, 12), 2000));
+      render(<DiaryScreen />);
+      expect(await screen.findByText("Avg deficit")).toBeTruthy();
+      const stat = screen.getByText("Avg deficit").parentElement!;
+      expect(within(stat).getByText("500")).toBeTruthy();
+      const workouts = screen.getByText("Workouts").parentElement!;
+      expect(within(workouts).getByText("1")).toBeTruthy();
+    } finally {
+      vi.unstubAllGlobals();
+      localStorage.clear();
+    }
+  });
+
   it("shows today's meals and the remaining kcal in the ring", async () => {
     await repo.addMeal(mk("Porridge", at(0, 8), 500));
     render(<DiaryScreen />);
