@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { render, screen, fireEvent, cleanup, configure, waitFor } from "@testing-library/react";
 import "../src/i18n";
 import i18n from "../src/i18n";
-import { macroTargets, type Profile } from "@bites/shared";
+import { kcalTarget, macroTargets, type Profile } from "@bites/shared";
 import Onboarding from "../src/features/onboarding/Onboarding";
 import { Toaster } from "../src/components/Toast";
 import Splash from "../src/features/splash/Splash";
@@ -56,6 +56,11 @@ describe("Onboarding", () => {
     click(/Moderate/);
     click("Continue");
 
+    expect(screen.getByText("Your day-to-day")).toBeTruthy();
+    click("Continue");
+    expect(screen.getByText("Anything we should know?")).toBeTruthy();
+    click("Continue");
+
     expect(await screen.findByText("2760")).toBeTruthy();
     expect(screen.queryByRole("button", { name: "Save with Google" })).toBeNull();
     click("Start");
@@ -65,6 +70,74 @@ describe("Onboarding", () => {
     expect(saved).toMatchObject({ sex: "male", birthYear: 1996, heightCm: 180, weightKg: 80, activity: "moderate", goal: "maintain", kcalTarget: 2760, units: "kcal", locale: "system" });
     expect(saved?.macroTargets).toEqual(macroTargets(2760, 80, "maintain"));
     expect(useStore.getState().profile?.kcalTarget).toBe(2760);
+  });
+
+  it("asks for a target weight and pace when losing, and uses them in the plan", async () => {
+    const done = vi.fn();
+    render(<Onboarding onDone={done} />);
+    click("Continue");
+    click("Continue");
+    click("Continue");
+    click("Lose weight");
+    click("Continue");
+    click("Male");
+    fireEvent.change(screen.getByLabelText("Birth year"), { target: { value: "1996" } });
+    click("Continue");
+    fireEvent.change(screen.getByLabelText("Height (cm)"), { target: { value: "180" } });
+    fireEvent.change(screen.getByLabelText("Weight (kg)"), { target: { value: "80" } });
+    click("Continue");
+
+    expect(screen.getByText("Your target")).toBeTruthy();
+    const target = screen.getByLabelText("Target weight (kg)") as HTMLInputElement;
+    expect(target.value).toBe("75");
+    fireEvent.change(target, { target: { value: "85" } });
+    expect(screen.getByText("Pick a weight below your current one.")).toBeTruthy();
+    expect((screen.getByRole("button", { name: "Continue" }) as HTMLButtonElement).disabled).toBe(true);
+    fireEvent.change(target, { target: { value: "70" } });
+    click(/Steady/);
+    click("Continue");
+
+    click(/Moderate/);
+    click("Continue");
+    click(/On your feet/);
+    click("Under 6 h");
+    click("Continue");
+    click("Continue");
+
+    const expected = kcalTarget({ sex: "male", birthYear: 1996, heightCm: 180, weightKg: 80, activity: "moderate", goal: "lose", pace: "steady", workType: "active" }, new Date(2026, 9, 14));
+    expect(await screen.findByText(String(expected))).toBeTruthy();
+    expect(screen.getByText("About 20 weeks to reach 70 kg at this pace.")).toBeTruthy();
+    expect(screen.getByText(/Short sleep can increase hunger/)).toBeTruthy();
+    click("Start");
+
+    await waitFor(() => expect(done).toHaveBeenCalled());
+    const saved = await repo.getProfile();
+    expect(saved).toMatchObject({ goal: "lose", targetWeightKg: 70, pace: "steady", workType: "active", sleepHours: 5, health: "none", kcalTarget: expected });
+  });
+
+  it("removes the deficit while breastfeeding", async () => {
+    const done = vi.fn();
+    render(<Onboarding onDone={done} />);
+    click("Continue");
+    click("Continue");
+    click("Continue");
+    click("Lose weight");
+    click("Continue");
+    click("Female");
+    click("Continue");
+    click("Continue");
+    click("Continue");
+    click("Continue");
+    click("Continue");
+    click(/Breastfeeding/);
+    click("Continue");
+    expect(await screen.findByText(/No calorie deficit is applied/)).toBeTruthy();
+    click("Start");
+    await waitFor(() => expect(done).toHaveBeenCalled());
+    const saved = await repo.getProfile();
+    expect(saved).toMatchObject({ health: "breastfeeding" });
+    const noDeficit = kcalTarget({ sex: "female", birthYear: 1990, heightCm: 170, weightKg: 70, activity: "light", goal: "maintain", workType: "desk" }, new Date(2026, 9, 14));
+    expect(saved!.kcalTarget).toBe(Math.round((noDeficit + 330) / 10) * 10);
   });
 
   it("blocks Continue until the sex is chosen", () => {
@@ -105,6 +178,8 @@ describe("Onboarding", () => {
       fireEvent.change(screen.getByLabelText("Weight (kg)"), { target: { value: "80" } });
       click("Continue");
       click(/Moderate/);
+      click("Continue");
+      click("Continue");
       click("Continue");
     };
 
@@ -191,6 +266,8 @@ describe("Onboarding", () => {
       click("Continue");
       click("Continue");
       click(/Moderate/);
+      click("Continue");
+      click("Continue");
       click("Continue");
       expect(await screen.findByText("Your daily plan")).toBeTruthy();
       expect(screen.queryByRole("button", { name: "Continue with Google" })).toBeNull();

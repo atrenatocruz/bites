@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { kcalTarget, macroTargets, type Profile } from "@bites/shared";
+import { kcalTarget, macroTargets, weeksToGoal, type Profile } from "@bites/shared";
 import { toast } from "../../components/Toast";
 import { applyProfileLocale } from "../../i18n";
 import { useStore } from "../../store";
@@ -45,6 +45,10 @@ export default function Onboarding({ onDone, initial, onCancel }: OnboardingProp
     weightKg: Number(answers.weightKg),
     activity: answers.activity,
     goal: answers.goal,
+    workType: answers.workType,
+    sleepHours: answers.sleepHours,
+    health: answers.health,
+    ...(answers.goal === "maintain" ? {} : { targetWeightKg: Number(answers.targetKg), pace: answers.pace }),
   };
   const kcal = override ?? kcalTarget(fields);
 
@@ -128,6 +132,10 @@ export default function Onboarding({ onDone, initial, onCancel }: OnboardingProp
       kcal={kcal}
       weightKg={fields.weightKg}
       goal={fields.goal}
+      weeks={weeksToGoal(fields.goal, fields.weightKg, fields.targetWeightKg, fields.pace)}
+      targetKg={fields.targetWeightKg}
+      sleepHours={fields.sleepHours}
+      health={fields.health}
       onKcalChange={setOverride}
       onStart={() => void (googleFlow ? continueWithGoogle() : start())}
       google={googleFlow}

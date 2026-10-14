@@ -2,6 +2,9 @@ export type MealType = "breakfast" | "lunch" | "dinner" | "snack";
 export type Sex = "female" | "male";
 export type Goal = "lose" | "maintain" | "gain";
 export type Activity = "sedentary" | "light" | "moderate" | "very";
+export type Pace = "slow" | "steady" | "fast";
+export type WorkType = "desk" | "mixed" | "active";
+export type Health = "none" | "pregnant" | "breastfeeding" | "condition";
 export interface Totals { kcal: number; protein: number; carbs: number; fat: number }
 export interface FoodItem {
   name: string; cookingMethod: string; grams: number;
@@ -16,6 +19,7 @@ export interface DaySummary extends Totals { dayKey: string; count: number }
 export interface MacroTargets { protein: number; carbs: number; fat: number }
 export interface Profile {
   sex: Sex; birthYear: number; heightCm: number; weightKg: number; activity: Activity; goal: Goal;
+  targetWeightKg?: number; pace?: Pace; workType?: WorkType; sleepHours?: number; health?: Health;
   kcalTarget: number; macroTargets: MacroTargets;
   locale: "system" | "pt-PT" | "en"; units: "kcal" | "kj"; createdAt: number;
 }

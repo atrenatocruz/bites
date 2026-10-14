@@ -35,10 +35,58 @@
     },
     "activity": {
       "title": "How active are you?",
-      "sedentary": "Sedentary", "sedentaryHint": "Desk job, little exercise",
+      "sedentary": "Sedentary", "sedentaryHint": "Little or no exercise",
       "light": "Light", "lightHint": "Exercise 1–3 days a week",
       "moderate": "Moderate", "moderateHint": "Exercise 3–5 days a week",
       "very": "Very active", "veryHint": "Hard exercise most days"
+    },
+    "target": {
+      "title": "Your target",
+      "weight": "Target weight (kg)",
+      "belowCurrent": "Pick a weight below your current one.",
+      "aboveCurrent": "Pick a weight above your current one.",
+      "paceLabel": "How fast?",
+      "slow": "Slow",
+      "steady": "Steady",
+      "fast": "Fast",
+      "slowHint": {
+        "lose": "0.25 kg a week · gentlest",
+        "gain": "0.15 kg a week · lean gain"
+      },
+      "steadyHint": {
+        "lose": "0.5 kg a week · recommended",
+        "gain": "0.25 kg a week · recommended"
+      },
+      "fastHint": {
+        "lose": "0.75 kg a week · demanding",
+        "gain": "0.4 kg a week · some fat gain"
+      }
+    },
+    "lifestyle": {
+      "title": "Your day-to-day",
+      "workLabel": "Your daily routine",
+      "desk": "Mostly sitting",
+      "deskHint": "Desk, studying, driving",
+      "mixed": "Mix of sitting and moving",
+      "mixedHint": "Teaching, retail, errands",
+      "active": "On your feet",
+      "activeHint": "Nursing, trades, hospitality",
+      "sleepLabel": "Sleep per night",
+      "sleepLow": "Under 6 h",
+      "sleepMid": "6–7 h",
+      "sleepGood": "7–8 h",
+      "sleepLong": "8 h or more"
+    },
+    "health": {
+      "title": "Anything we should know?",
+      "none": "Nothing in particular",
+      "noneHint": "Standard plan",
+      "pregnant": "Pregnant",
+      "pregnantHint": "No calorie deficit will be applied",
+      "breastfeeding": "Breastfeeding",
+      "breastfeedingHint": "No deficit, plus about 330 kcal a day",
+      "condition": "A medical condition",
+      "conditionHint": "Diabetes, eating disorder history or similar"
     },
     "plan": {
       "title": "Your daily plan",
@@ -46,7 +94,11 @@
       "start": "Start",
       "google": "Continue with Google",
       "footnote": "AI estimates can be off by 20–40%. Adjust portions for accuracy.",
-      "editTarget": "Daily calories"
+      "editTarget": "Daily calories",
+      "weeks": "About {{weeks}} weeks to reach {{target}} kg at this pace.",
+      "sleepTip": "Short sleep can increase hunger. Aim for 7 hours or more.",
+      "pregnantNote": "No calorie deficit is applied while pregnant or breastfeeding. Ask your doctor or midwife about your needs.",
+      "conditionNote": "This is a general estimate. Check it with your doctor or dietitian."
     }
   },
   "tabs": { "history": "History", "scan": "Scan", "diary": "Diary" },

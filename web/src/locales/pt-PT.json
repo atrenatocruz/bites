@@ -35,10 +35,58 @@
     },
     "activity": {
       "title": "Qual é o teu nível de atividade?",
-      "sedentary": "Sedentário", "sedentaryHint": "Trabalho de secretária, pouco exercício",
+      "sedentary": "Sedentário", "sedentaryHint": "Pouco ou nenhum exercício",
       "light": "Ligeiro", "lightHint": "Exercício 1–3 dias por semana",
       "moderate": "Moderado", "moderateHint": "Exercício 3–5 dias por semana",
       "very": "Muito ativo", "veryHint": "Exercício intenso quase todos os dias"
+    },
+    "target": {
+      "title": "O teu objetivo",
+      "weight": "Peso pretendido (kg)",
+      "belowCurrent": "Escolhe um peso abaixo do atual.",
+      "aboveCurrent": "Escolhe um peso acima do atual.",
+      "paceLabel": "A que ritmo?",
+      "slow": "Lento",
+      "steady": "Regular",
+      "fast": "Rápido",
+      "slowHint": {
+        "lose": "0,25 kg por semana · o mais suave",
+        "gain": "0,15 kg por semana · ganho magro"
+      },
+      "steadyHint": {
+        "lose": "0,5 kg por semana · recomendado",
+        "gain": "0,25 kg por semana · recomendado"
+      },
+      "fastHint": {
+        "lose": "0,75 kg por semana · exigente",
+        "gain": "0,4 kg por semana · algum ganho de gordura"
+      }
+    },
+    "lifestyle": {
+      "title": "O teu dia a dia",
+      "workLabel": "A tua rotina diária",
+      "desk": "Maioritariamente sentado",
+      "deskHint": "Secretária, estudo, conduzir",
+      "mixed": "Entre sentado e em movimento",
+      "mixedHint": "Ensino, comércio, recados",
+      "active": "Em pé o dia todo",
+      "activeHint": "Enfermagem, obras, restauração",
+      "sleepLabel": "Sono por noite",
+      "sleepLow": "Menos de 6 h",
+      "sleepMid": "6–7 h",
+      "sleepGood": "7–8 h",
+      "sleepLong": "8 h ou mais"
+    },
+    "health": {
+      "title": "Algo que devamos saber?",
+      "none": "Nada em particular",
+      "noneHint": "Plano padrão",
+      "pregnant": "Grávida",
+      "pregnantHint": "Não será aplicado défice calórico",
+      "breastfeeding": "A amamentar",
+      "breastfeedingHint": "Sem défice, mais cerca de 330 kcal por dia",
+      "condition": "Uma condição médica",
+      "conditionHint": "Diabetes, historial de perturbação alimentar ou semelhante"
     },
     "plan": {
       "title": "O teu plano diário",
@@ -46,7 +94,11 @@
       "start": "Começar",
       "google": "Continuar com o Google",
       "footnote": "As estimativas da IA podem falhar 20–40%. Ajusta as porções para maior precisão.",
-      "editTarget": "Calorias diárias"
+      "editTarget": "Calorias diárias",
+      "weeks": "Cerca de {{weeks}} semanas para chegar aos {{target}} kg a este ritmo.",
+      "sleepTip": "Dormir pouco pode aumentar a fome. Tenta dormir 7 horas ou mais.",
+      "pregnantNote": "Não é aplicado défice calórico durante a gravidez ou amamentação. Fala com o teu médico ou enfermeiro sobre as tuas necessidades.",
+      "conditionNote": "Esta é uma estimativa geral. Confirma-a com o teu médico ou nutricionista."
     }
   },
   "tabs": { "history": "Histórico", "scan": "Scan", "diary": "Diário" },
