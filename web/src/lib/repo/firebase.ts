@@ -57,6 +57,7 @@ export class FirebaseRepo implements Repo {
     });
     this.auth = getAuth(app);
     this.db = initializeFirestore(app, { localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }) });
+    this.user().catch(() => {});
   }
 
   private user(): Promise<User> {

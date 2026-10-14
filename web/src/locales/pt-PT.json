@@ -129,6 +129,8 @@
     "disclaimer": "As estimativas da IA podem falhar 20–40%. Ajusta as porções para maior precisão. O Bites não substitui aconselhamento médico."
   },
   "errors": {
+    "loadTitle": "Não foi possível carregar os teus dados",
+    "loadBody": "Verifica a ligação e tenta novamente.",
     "offline": "Estás offline — o scan precisa de internet",
     "rate_limited": "Estás a fazer scans depressa demais. Espera um minuto e tenta outra vez.",
     "not_food": "Isto não parece comida. Tenta outra vez.",

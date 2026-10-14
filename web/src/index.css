@@ -12,6 +12,7 @@
   --fat: #af52de;
   --good: #34c759;
   --over: #ff9f0a;
+  --danger: #ff3b30;
   color-scheme: light dark;
 }
 
@@ -28,6 +29,7 @@
     --fat: #bf5af2;
     --good: #30d158;
     --over: #ffb340;
+    --danger: #ff453a;
   }
 }
 
@@ -43,6 +45,7 @@
   --color-fat: var(--fat);
   --color-good: var(--good);
   --color-over: var(--over);
+  --color-danger: var(--danger);
   --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", system-ui, sans-serif;
   --radius-card: 20px;
   --radius-sheet: 28px;

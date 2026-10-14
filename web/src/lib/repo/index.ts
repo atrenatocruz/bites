@@ -11,9 +11,15 @@ const forward =
     return fn?.apply(repo, args);
   };
 
-function lazyRepo(load: () => Promise<Repo>): Repo {
+export function lazyRepo(load: () => Promise<Repo>): Repo {
   let loading: Promise<Repo> | undefined;
-  const once = () => (loading ??= load());
+  const once = () => {
+    loading ??= load().catch((e) => {
+      loading = undefined;
+      throw e;
+    });
+    return loading;
+  };
   const call = (name: keyof Repo) => forward(once, name);
   return {
     kind: "firebase",

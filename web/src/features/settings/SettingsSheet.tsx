@@ -10,7 +10,6 @@ import { download, toCSV, toJSON } from "../../lib/export";
 import type { AccountInfo } from "../../lib/repo";
 import { energyUnit, formatEnergy } from "../../lib/stats";
 import { useStore } from "../../store";
-import pkg from "../../../package.json";
 
 interface SettingsSheetProps {
   open: boolean;
@@ -265,13 +264,13 @@ export default function SettingsSheet({ open, onClose, onRedo }: SettingsSheetPr
               <span className="text-body">{t("settings.exportJson")}</span>
             </button>
             <button type="button" className={`${rowClass} active:opacity-60`} onClick={() => setConfirmOpen(true)}>
-              <span className="text-body text-[#ff3b30] dark:text-[#ff453a]">{t("settings.deleteAll")}</span>
+              <span className="text-body text-danger">{t("settings.deleteAll")}</span>
             </button>
           </Group>
 
           <section className="mt-7 px-1">
             <h3 className="pb-2 text-caption uppercase tracking-wide">{t("settings.about")}</h3>
-            <p className="text-subhead tabular">{t("settings.version", { version: pkg.version })}</p>
+            <p className="text-subhead tabular">{t("settings.version", { version: __APP_VERSION__ })}</p>
             <p className="mt-2 text-subhead text-fg-2">{t("settings.disclaimer")}</p>
           </section>
         </div>
@@ -282,7 +281,7 @@ export default function SettingsSheet({ open, onClose, onRedo }: SettingsSheetPr
           <h2 className="text-title">{t("settings.deleteConfirmTitle")}</h2>
           <p className="mt-2 text-body text-fg-2">{t("settings.deleteConfirmBody")}</p>
           <div className="mt-6 flex flex-col gap-2">
-            <PillButton className="w-full !bg-[#ff3b30] dark:!bg-[#ff453a]" onClick={() => void deleteAll()}>
+            <PillButton className="w-full !bg-danger" onClick={() => void deleteAll()}>
               {t("settings.deleteConfirm")}
             </PillButton>
             <PillButton variant="text" className="w-full" onClick={() => setConfirmOpen(false)}>

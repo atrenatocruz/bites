@@ -129,6 +129,8 @@
     "disclaimer": "AI estimates can be off by 20–40%. Adjust portions for accuracy. Bites is not medical advice."
   },
   "errors": {
+    "loadTitle": "Couldn't load your data",
+    "loadBody": "Check your connection and try again.",
     "offline": "You're offline — scanning needs internet",
     "rate_limited": "You're scanning fast. Give it a minute and try again.",
     "not_food": "That doesn't look like food. Try again.",

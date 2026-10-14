@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { useTranslation } from "react-i18next";
+import PillButton from "./components/PillButton";
 import { applyProfileLocale } from "./i18n";
 import { useStore } from "./store";
 import TabBar from "./components/TabBar";
@@ -18,28 +20,45 @@ export default function App({ skipSplash = false }: AppProps) {
   const profile = useStore((s) => s.profile);
   const [splashDone, setSplashDone] = useState(skipSplash);
   const [loaded, setLoaded] = useState(false);
+  const [failed, setFailed] = useState(false);
+  const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
     let live = true;
-    void repo
-      .getProfile()
-      .catch(() => null)
-      .then((p) => {
+    setFailed(false);
+    repo.getProfile().then(
+      (p) => {
         if (!live) return;
         useStore.getState().setProfile(p);
         if (p) applyProfileLocale(p.locale);
         setLoaded(true);
-      });
+      },
+      () => live && setFailed(true),
+    );
     return () => {
       live = false;
     };
-  }, [repo]);
+  }, [repo, attempt]);
 
   return (
     <>
+      {failed && <LoadError onRetry={() => setAttempt((n) => n + 1)} />}
       {loaded && (profile ? <Shell /> : <Onboarding onDone={() => {}} />)}
       <AnimatePresence>{!splashDone && <Splash onDone={() => setSplashDone(true)} />}</AnimatePresence>
     </>
+  );
+}
+
+function LoadError({ onRetry }: { onRetry: () => void }) {
+  const { t } = useTranslation();
+  return (
+    <div className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-2 bg-bg px-8 text-center">
+      <h1 className="text-title">{t("errors.loadTitle")}</h1>
+      <p className="text-body text-fg-2">{t("errors.loadBody")}</p>
+      <PillButton className="mt-6" onClick={onRetry}>
+        {t("common.retry")}
+      </PillButton>
+    </div>
   );
 }
 
