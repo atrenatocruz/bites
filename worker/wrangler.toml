@@ -1,0 +1,16 @@
+name = "bites-api"
+main = "src/index.ts"
+compatibility_date = "2026-09-01"
+compatibility_flags = ["nodejs_compat"]
+
+[vars]
+AI_MODEL = "claude-sonnet-5-5"
+AUTH_MODE = "firebase"
+FIREBASE_PROJECT_ID = "bites-26a27"
+DAILY_LIMIT = "30"
+ALLOWED_ORIGINS = "https://bites.keyboardai-backend.workers.dev"
+
+[[kv_namespaces]]
+binding = "RATE_KV"
+id = "b91f404c971e424a9fa66ef92d167cab"
+preview_id = "b91f404c971e424a9fa66ef92d167cab"

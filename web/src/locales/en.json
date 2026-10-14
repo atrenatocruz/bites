@@ -1,0 +1,157 @@
+{
+  "app": { "name": "Bites", "tagline": "Point. Snap. Know." },
+  "common": {
+    "continue": "Continue", "back": "Back", "cancel": "Cancel", "done": "Done", "save": "Save", "edit": "Edit",
+    "delete": "Delete", "undo": "Undo", "close": "Close", "retry": "Try again", "update": "Update", "search": "Search",
+    "kcal": "kcal", "kj": "kJ", "g": "g", "cm": "cm", "kg": "kg", "protein": "Protein", "carbs": "Carbs", "fat": "Fat",
+    "proteinShort": "P", "carbsShort": "C", "fatShort": "F", "remaining": "remaining", "over": "over", "eaten": "eaten", "target": "Target"
+  },
+  "onboarding": {
+    "slides": {
+      "one": { "title": "Point. Snap. Know.", "body": "Your camera knows what's on your plate." },
+      "two": { "title": "Every ingredient, counted.", "body": "Bites splits your meal into parts you can adjust." },
+      "three": { "title": "Your day at a glance.", "body": "A calendar that shows how you're doing." }
+    },
+    "illustration": { "rice": "Rice 150 g · 195 kcal", "chicken": "Chicken 120 g · 198 kcal" },
+    "page": "Page {{current}} of {{total}}",
+    "step": "Question {{current}} of {{total}}",
+    "goal": {
+      "title": "What's your goal?",
+      "lose": "Lose weight", "maintain": "Maintain weight", "gain": "Gain weight"
+    },
+    "about": {
+      "title": "About you",
+      "sexLabel": "Sex", "female": "Female", "male": "Male",
+      "sexNote": "Used only to estimate your metabolism.",
+      "birthYear": "Birth year"
+    },
+    "body": {
+      "title": "Height and weight",
+      "height": "Height (cm)", "weight": "Weight (kg)",
+      "bmi": "BMI {{value}} · {{category}}",
+      "bmiUnderweight": "underweight", "bmiHealthy": "healthy", "bmiOverweight": "overweight", "bmiObese": "obese"
+    },
+    "activity": {
+      "title": "How active are you?",
+      "sedentary": "Sedentary", "sedentaryHint": "Desk job, little exercise",
+      "light": "Light", "lightHint": "Exercise 1–3 days a week",
+      "moderate": "Moderate", "moderateHint": "Exercise 3–5 days a week",
+      "very": "Very active", "veryHint": "Hard exercise most days"
+    },
+    "plan": {
+      "title": "Your daily plan",
+      "caption": "calories a day",
+      "start": "Start",
+      "saveWithGoogle": "Save with Google",
+      "footnote": "AI estimates can be off by 20–40%. Adjust portions for accuracy.",
+      "editTarget": "Daily calories"
+    }
+  },
+  "tabs": { "history": "History", "scan": "Scan", "diary": "Diary" },
+  "scan": {
+    "scaleHint": "Include a fork or your hand for scale.",
+    "gallery": "Gallery", "type": "Type", "shutter": "Take photo",
+    "detailClear": "Clear detail",
+    "addDetail": "Add detail",
+    "detailPlaceholder": "e.g. no sauce, half portion",
+    "errorTitle": "Couldn't analyze this",
+    "analyzing": "Analyzing…",
+    "describePlaceholder": "Describe your meal, e.g. two eggs and toast",
+    "describeTitle": "Type it",
+    "analyze": "Analyze",
+    "denied": {
+      "title": "Camera unavailable",
+      "body": "Allow camera access in your browser, or pick another way to add your meal.",
+      "choosePhoto": "Choose photo", "typeIt": "Type it"
+    }
+  },
+  "result": {
+    "addItem": "Add item", "addItemTitle": "Add an item", "remove": "Remove {{name}}", "gramsInput": "Grams",
+    "range": "between {{low}} and {{high}}",
+    "mealType": "Meal type",
+    "addingTo": "Adding to {{date}}",
+    "items": "Ingredients",
+    "gramsStepper": "Grams for {{name}}",
+    "lowConfidence": "Low confidence",
+    "followUp": "A quick question",
+    "followUpPlaceholder": "Your answer",
+    "notFoodTitle": "That doesn't look like food",
+    "notFoodBody": "Try again with your meal in the frame.",
+    "save": "Save", "retake": "Retake",
+    "total": "Total"
+  },
+  "mealType": { "breakfast": "Breakfast", "lunch": "Lunch", "dinner": "Dinner", "snack": "Snack" },
+  "history": {
+    "title": "History",
+    "searchPlaceholder": "Search meals",
+    "today": "Today", "yesterday": "Yesterday",
+    "empty": "Your scans will show up here.",
+    "noResults": "No meals match your search.",
+    "detail": { "title": "Meal", "logAgain": "Log again today", "delete": "Delete meal" },
+    "deleted": "Meal deleted"
+  },
+  "diary": {
+    "title": "Diary",
+    "today": "Today",
+    "settings": "Settings",
+    "streak": "{{count}} day streak",
+    "weekdays": { "mon": "M", "tue": "T", "wed": "W", "thu": "T", "fri": "F", "sat": "S", "sun": "S" },
+    "calendar": { "expand": "Show month", "collapse": "Hide month", "previous": "Previous", "next": "Next" },
+    "ring": { "remaining": "remaining", "over": "over", "summary": "{{eaten}} of {{target}} {{unit}}" },
+    "meals": "Meals",
+    "noMeals": "Nothing logged yet.",
+    "trends": {
+      "title": "Trends",
+      "week": "Week", "month": "Month", "year": "Year",
+      "average": "Average / day", "daysOnTarget": "On target", "streak": "Streak",
+      "streakValue": "{{current}} / best {{best}}",
+      "best": "best {{count}}",
+      "ofLogged": "of {{count}} days",
+      "chartLabel": "{{period}} calories chart",
+      "targetLine": "Target",
+      "noData": "Not enough data yet."
+    }
+  },
+  "settings": {
+    "increase": "Increase {{name}}", "decrease": "Decrease {{name}}",
+    "title": "Settings",
+    "target": "Daily target",
+    "macros": "Macros",
+    "profile": "Profile", "profileRedo": "Redo the questions",
+    "language": "Language", "languageSystem": "System", "languagePt": "Português", "languageEn": "English",
+    "units": "Units",
+    "account": "Account", "signIn": "Sign in with Google", "signOut": "Sign out", "anonymous": "Anonymous",
+    "mergeTitle": "Sign in with Google?", "mergeBody": "Meals on this device will be merged into your Google account.", "mergeConfirm": "Continue",
+    "exportCsv": "Export CSV", "exportJson": "Export JSON",
+    "deleteAll": "Delete all data",
+    "deleteConfirmTitle": "Delete everything?",
+    "deleteConfirmBody": "All your meals and your profile will be removed. This can't be undone.",
+    "deleteConfirm": "Delete all",
+    "about": "About", "version": "Version {{version}}",
+    "disclaimer": "AI estimates can be off by 20–40%. Adjust portions for accuracy. Bites is not medical advice."
+  },
+  "errors": {
+    "loadTitle": "Couldn't load your data",
+    "loadBody": "Check your connection and try again.",
+    "offline": "You're offline — scanning needs internet",
+    "rate_limited": "You're scanning fast. Give it a minute and try again.",
+    "not_food": "That doesn't look like food. Try again.",
+    "refusal": "The AI couldn't analyze this image. Try another photo.",
+    "bad_output": "Something went wrong reading the result. Try again.",
+    "upstream": "The AI service is having a moment. Try again shortly.",
+    "unauthorized": "Your session expired. Reload the app.",
+    "bad_request": "We couldn't send that. Try a different photo.",
+    "camera_denied": "Camera access was denied. Choose a photo or type your meal instead.",
+    "generic": "Something went wrong. Try again."
+  },
+  "toasts": {
+    "view": "View",
+    "added": "Added to today",
+    "updated": "Meal updated",
+    "deleted": "Meal deleted",
+    "loggedAgain": "Logged again today",
+    "exported": "Export ready",
+    "allDeleted": "All data deleted",
+    "saved": "Saved"
+  }
+}

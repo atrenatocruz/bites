@@ -1,0 +1,124 @@
+@import "tailwindcss";
+
+:root {
+  --bg: #ffffff;
+  --bg-elevated: #f5f5f7;
+  --fg: #1d1d1f;
+  --fg-secondary: #6e6e73;
+  --separator: #e5e5ea;
+  --accent: #ff5a1f;
+  --on-accent: #ffffff;
+  --accent-text: #c2410c;
+  --accent-inverse: #ff5a1f;
+  --protein: #0a84ff;
+  --carbs: #ffb800;
+  --fat: #af52de;
+  --good: #34c759;
+  --over: #ff9f0a;
+  --danger: #ff3b30;
+  color-scheme: light dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #000000;
+    --bg-elevated: #1c1c1e;
+    --fg: #f5f5f7;
+    --fg-secondary: #98989d;
+    --separator: #38383a;
+    --accent: #ff6a33;
+    --on-accent: #000000;
+    --accent-text: #ff6a33;
+    --accent-inverse: #c2410c;
+    --protein: #409cff;
+    --carbs: #ffc933;
+    --fat: #bf5af2;
+    --good: #30d158;
+    --over: #ffb340;
+    --danger: #ff453a;
+  }
+}
+
+@theme {
+  --color-bg: var(--bg);
+  --color-fg: var(--fg);
+  --color-fg-2: var(--fg-secondary);
+  --color-elevated: var(--bg-elevated);
+  --color-sep: var(--separator);
+  --color-accent: var(--accent);
+  --color-on-accent: var(--on-accent);
+  --color-accent-text: var(--accent-text);
+  --color-accent-inverse: var(--accent-inverse);
+  --color-protein: var(--protein);
+  --color-carbs: var(--carbs);
+  --color-fat: var(--fat);
+  --color-good: var(--good);
+  --color-over: var(--over);
+  --color-danger: var(--danger);
+  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", system-ui, sans-serif;
+  --radius-card: 20px;
+  --radius-sheet: 28px;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  overscroll-behavior: none;
+}
+
+.text-large-title { font-size: 34px; line-height: 41px; font-weight: 700; }
+.text-title { font-size: 22px; line-height: 28px; font-weight: 700; }
+.text-headline { font-size: 17px; line-height: 22px; font-weight: 600; }
+.pill-primary { color: var(--on-accent); font-size: 19px; line-height: 24px; font-weight: 700; }
+
+@media (prefers-color-scheme: dark) {
+  .pill-primary { font-size: 17px; line-height: 22px; font-weight: 600; }
+}
+
+.text-body { font-size: 17px; line-height: 22px; font-weight: 400; }
+.text-subhead { font-size: 15px; line-height: 20px; font-weight: 400; }
+.text-caption { font-size: 12px; line-height: 16px; font-weight: 500; color: var(--fg-secondary); }
+.text-hero {
+  font-size: 56px;
+  line-height: 60px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.tabular { font-variant-numeric: tabular-nums; }
+
+@keyframes shimmer-sweep {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(100%); }
+}
+
+.shimmer {
+  background: linear-gradient(100deg, transparent 20%, rgba(255, 255, 255, 0.28) 50%, transparent 80%);
+  animation: shimmer-sweep 1.4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shimmer { animation: none; background: rgba(255, 255, 255, 0.12); }
+}
+
+button,
+a,
+[role="button"],
+input[type="range"],
+summary {
+  touch-action: manipulation;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}

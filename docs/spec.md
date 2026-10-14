@@ -29,11 +29,14 @@ Bites is a calorie tracker PWA. You point the camera at food, the AI breaks the 
 | `--fg-secondary` | `#6E6E73` | `#98989D` | secondary text |
 | `--separator` | `#E5E5EA` | `#38383A` | hairlines |
 | `--accent` | `#FF5A1F` | `#FF6A33` | Bites orange: shutter, primary buttons, kcal ring |
+| `--on-accent` | `#FFFFFF` | `#000000` | text and icons on accent fills (primary button, Scan circle). Light mode primary label is 19 px / 700 so 3.12:1 passes the large-text 3:1 threshold; dark mode stays 17 px / 600 |
+| `--accent-text` | `#C2410C` | `#FF6A33` | accent-coloured text (links, text buttons, active tab label). Fills, rings and bars keep `--accent` |
 | `--protein` | `#0A84FF` | `#409CFF` | protein ring/bar |
 | `--carbs` | `#FFB800` | `#FFC933` | carbs ring/bar |
 | `--fat` | `#AF52DE` | `#BF5AF2` | fat ring/bar |
 | `--good` | `#34C759` | `#30D158` | on-target day |
 | `--over` | `#FF9F0A` | `#FFB340` | over-target day |
+| `--danger` | `#FF3B30` | `#FF453A` | destructive actions |
 
 Only one accent. Macro colors appear only in macro visuals.
 

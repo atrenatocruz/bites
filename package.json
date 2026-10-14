@@ -1,0 +1,11 @@
+{
+  "name": "bites",
+  "private": true,
+  "workspaces": ["shared", "worker", "web"],
+  "scripts": {
+    "test": "npm run test --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "dev": "concurrently -n worker,web -c yellow,cyan \"npm run dev -w worker\" \"npm run dev -w web\""
+  },
+  "devDependencies": { "concurrently": "^9.1.0", "typescript": "^5.6.3", "vitest": "^2.1.8" }
+}
