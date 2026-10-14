@@ -6,6 +6,7 @@ compatibility_flags = ["nodejs_compat"]
 [vars]
 AI_MODEL = "claude-sonnet-5-5"
 AUTH_MODE = "firebase"
+FIREBASE_PROJECT_ID = "bites-26a27"
 DAILY_LIMIT = "30"
 ALLOWED_ORIGINS = ""
 
