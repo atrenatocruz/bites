@@ -18,7 +18,7 @@ function ScanIllustration() {
   const reduce = useReducedMotion();
   return (
     <svg viewBox="0 0 280 280" className="size-full" aria-hidden="true">
-      <Plate />
+      <Plate r={110} />
       <circle cx="118" cy="140" r="20" fill="var(--carbs)" />
       <rect x="140" y="132" width="44" height="26" rx="13" fill="var(--accent)" />
       <circle cx="150" cy="176" r="14" fill="var(--good)" />

@@ -183,7 +183,7 @@ export default function SettingsSheet({ open, onClose, onRedo }: SettingsSheetPr
 
           {profile && (
             <>
-              <Group title={t("settings.target")}>
+              <Group>
                 <label className={rowClass}>
                   <span className="text-body">{t("settings.target")}</span>
                   <span className="flex items-baseline gap-1.5">
