@@ -32,11 +32,11 @@ Out of scope for now: Android (Health Connect has no web access; a native wrappe
 
 The Apple Health section only appears on iOS (iPhone/iPad user agent). Elsewhere it reads "Apple Health is only available on iPhone for now."
 
-1. **Connect Apple Health** calls `POST /api/activity/key`, receives a new personal key, and copies it to the clipboard (from the tap, so iOS allows it). If copying fails, the key is shown with a Copy button.
-2. Bites opens the shared iCloud Shortcut link (`VITE_HEALTH_SHORTCUT_URL`). iOS shows **Add Shortcut**.
+1. **Connect Apple Health** calls `POST /api/activity/key`, receives a new personal key, and copies it to the clipboard. The copy is started inside the tap with a `ClipboardItem` whose content is the pending key, because iOS refuses clipboard writes made after an `await`. If copying fails, the key is shown with a Copy button.
+2. The section shows "Key copied ✓" and an **Add the Shortcut** button linking to the shared iCloud Shortcut (`VITE_HEALTH_SHORTCUT_URL`). iOS shows **Add Shortcut**.
 3. The Shortcut has one import question, "Paste your Bites key". The person pastes and taps Add Shortcut.
 4. Back in Bites, the section switches to a "Finish setup" state with **Sync now**, which opens `shortcuts://run-shortcut?name=Bites%20Health`. On first run the Shortcut asks for Health permission (iOS shows the categories), then sends the last 7 days and shows "Bites: synced ✓".
-5. Optional card **Sync automatically every night**: a short guide with one step per screen (Shortcuts → Automation → + → Time of Day → 23:00, Daily → Run Immediately → Bites Health). Also suggests a second automation "When a workout ends" where available.
+5. Optional card **Sync automatically every night**: a short numbered guide in a sheet (Shortcuts → Automation → + → Time of Day → 23:00, Daily → Run Immediately → Bites Health). Also suggests a second automation "When a workout ends" where available.
 
 The section considers itself "connected" once the server has received at least one sync for this person.
 
@@ -64,10 +64,10 @@ Week strip and month calendar: a small dot under days that have at least one wor
 
 ### 3.4 Trends
 
-Two extra stats for the selected period (week / month / year), counting only days that have Health data:
+Two extra stats for the selected period (week / month / year):
 
-- **Avg deficit** (per day).
-- **Workouts** (count).
+- **Avg deficit** (per day), over days that have both Health data and at least one logged meal (a day with no meals would otherwise count its whole burn as deficit). Shows "–" when there are none.
+- **Workouts** (count), over all days with Health data.
 
 Hidden when the person is not connected.
 
@@ -91,7 +91,7 @@ interface Workout { type: string; start: string /* ISO 8601 */; minutes: number;
 interface ActivityDay { restingKcal: number | null; activeKcal: number | null; workouts: Workout[] }
 ```
 
-Grouping days by month keeps reads cheap: a year of Trends is 12 KV reads, a sync touches at most 2 months. Only the hash of the key is stored. The key is 32 random bytes, base64url.
+Grouping days by month keeps reads cheap: the Diary's range is at most 27 KV reads, a sync touches at most 2 months. Only the hash of the key is stored. The key is 32 random bytes, base64url.
 
 Privacy: the worker stores only daily energy totals and workout type/time/duration/kcal. No heart rate, location or routes.
 
@@ -102,7 +102,7 @@ Privacy: the worker stores only daily energy totals and workout type/time/durati
 | `POST /api/activity/key` | Firebase | Creates a key, replaces any previous one, returns `{ key }` once. |
 | `DELETE /api/activity/key` | Firebase | Deletes the key (both KV entries). |
 | `DELETE /api/activity` | Firebase | Deletes the key and all `activity:<uid>:*` entries (used by "Delete all data"). |
-| `GET /api/activity?from=YYYY-MM-DD&to=YYYY-MM-DD` | Firebase | Returns `{ days: Record<day, ActivityDay>, lastSync: { syncedAt, tz } \| null, hasKey: boolean }`. Range at most 400 days. |
+| `GET /api/activity?from=YYYY-MM-DD&to=YYYY-MM-DD` | Firebase | Returns `{ days: Record<day, ActivityDay>, lastSync: { syncedAt, tz } \| null, hasKey: boolean }`. Range at most 800 days (the Diary loads two to three calendar years at once). |
 | `POST /api/activity/sync` | `Authorization: Bearer <key>` | Body `{ tz, days: [{ day, restingKcal, activeKcal, workouts }] }`. Validates, merges each day into its month (overwriting that day), updates `last`. Returns `{ ok: true, days: n }`. |
 
 New routes live under `/api/activity` because `/api/health` is already the uptime check.
@@ -110,9 +110,10 @@ New routes live under `/api/activity` because `/api/health` is already the uptim
 Validation for `sync`:
 - At most 8 days; each `day` a valid date within the last 10 days and not more than 1 day in the future.
 - Energy numbers `null` or 0–20 000; workouts at most 20 per day, `minutes` 0–1 440, `kcal` `null` or 0–10 000, `type` trimmed to 40 characters.
-- Body capped at 64 KB. `tz` accepted by `Intl.DateTimeFormat` (falls back to UTC).
+- Body capped at 64 KB. `tz` is optional (Shortcuts cannot read the IANA zone name); kept when `Intl.DateTimeFormat` accepts it, otherwise stored as `"UTC"`. It is informational only.
+- Numbers may arrive as strings, including a decimal comma (pt-PT phones); they are parsed leniently.
 - Unknown or deleted key: 401. Rate limit: 30 syncs per key per hour (existing `ratelimit.ts` pattern), then 429.
-- CORS: `sync` accepts any origin (the Shortcut is not a browser); the other routes keep `ALLOWED_ORIGINS`.
+- CORS: unchanged except adding `DELETE` to the allowed methods. The Shortcut sends no `Origin` header, so it needs no CORS.
 
 Handlers follow the existing style: functions in a new `worker/src/activity.ts` with injected `verifyRequest` and `now`, routed from `index.ts`.
 
