@@ -113,7 +113,7 @@ describe("ResultSheet", () => {
     fireEvent.click(screen.getByRole("button", { name: "Add item" }));
     fireEvent.change(screen.getByPlaceholderText(/Describe your meal/), { target: { value: "a pear" } });
     await act(async () => { fireEvent.click(screen.getByRole("button", { name: "Analyze" })); });
-    expect(await screen.findByText(/scanning fast/)).toBeTruthy();
+    expect(await screen.findByText(/used all your scans for today/)).toBeTruthy();
     expect(screen.getByTestId("hero-kcal").textContent).toBe("550");
   });
 

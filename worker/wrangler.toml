@@ -7,8 +7,15 @@ compatibility_flags = ["nodejs_compat"]
 AI_MODEL = "claude-sonnet-5-5"
 AUTH_MODE = "firebase"
 FIREBASE_PROJECT_ID = "bites-26a27"
+# Daily scans per user: paid plan (Claude) and free plan (Workers AI).
 DAILY_LIMIT = "30"
+FREE_DAILY_LIMIT = "5"
+# SHA-256 hashes (comma separated) of codes that unlock the paid plan from Settings.
+REDEEM_CODE_HASHES = "33a476a898298d1ec4da66385586df87d236d7dc982d0743ade1786e5b3a9fa4"
 ALLOWED_ORIGINS = "https://bites.keyboardai-backend.workers.dev"
+
+[ai]
+binding = "AI"
 
 [[kv_namespaces]]
 binding = "RATE_KV"

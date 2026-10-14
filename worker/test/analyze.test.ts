@@ -13,14 +13,15 @@ const raw = {
   scale_reference_used: "prato 27 cm", follow_up_question: null, notes: null,
 };
 
-function makeEnv(over: Partial<Env> = {}): Env {
-  const store = new Map<string, string>();
+function makeEnv(over: Partial<Env> = {}, plan: "free" | "paid" = "paid"): Env {
+  const store = new Map<string, string>(plan === "paid" ? [["plan:uid1", "paid"]] : []);
   const RATE_KV = { get: async (k: string) => store.get(k) ?? null, put: async (k: string, v: string) => { store.set(k, v); } } as unknown as KVNamespace;
   return { ANTHROPIC_API_KEY: "k", RATE_KV, ...over };
 }
 function makeDeps(over: Partial<Deps> = {}): Deps {
   return {
     callClaude: vi.fn(async () => ({ kind: "ok", json: raw }) as const),
+    callWorkersAi: vi.fn(async () => ({ kind: "ok", json: raw }) as const),
     verifyRequest: vi.fn(async () => "uid1"),
     now: () => new Date("2026-10-14T12:00:00Z"),
     ...over,
@@ -51,7 +52,42 @@ describe("handleAnalyze", () => {
     expect((await handleAnalyze(post(ok), env, deps)).status).toBe(200);
     const r = await handleAnalyze(post(ok), env, deps);
     expect(r.status).toBe(429);
-    expect(await r.json()).toEqual({ error: "rate_limited" });
+    expect(await r.json()).toEqual({ error: "rate_limited", plan: "paid" });
+  });
+  it("paid plan uses Claude, not Workers AI", async () => {
+    const deps = makeDeps();
+    expect((await handleAnalyze(post(ok), makeEnv(), deps)).status).toBe(200);
+    expect(deps.callClaude).toHaveBeenCalledTimes(1);
+    expect(deps.callWorkersAi).not.toHaveBeenCalled();
+  });
+  it("free plan uses Workers AI, not Claude", async () => {
+    const deps = makeDeps();
+    const r = await handleAnalyze(post(ok), makeEnv({}, "free"), deps);
+    expect(r.status).toBe(200);
+    expect(((await r.json()) as any).title).toBe("Bitoque");
+    expect(deps.callWorkersAi).toHaveBeenCalledTimes(1);
+    expect(deps.callClaude).not.toHaveBeenCalled();
+  });
+  it("free plan stops after 5 scans a day by default, paid has its own limit", async () => {
+    const free = makeEnv({}, "free");
+    const deps = makeDeps();
+    for (let i = 0; i < 5; i++) expect((await handleAnalyze(post(ok), free, deps)).status).toBe(200);
+    const r = await handleAnalyze(post(ok), free, deps);
+    expect(r.status).toBe(429);
+    expect(await r.json()).toEqual({ error: "rate_limited", plan: "free" });
+    const paid = makeEnv({ DAILY_LIMIT: "30", FREE_DAILY_LIMIT: "1" });
+    for (let i = 0; i < 6; i++) expect((await handleAnalyze(post(ok), paid, deps)).status).toBe(200);
+  });
+  it("FREE_DAILY_LIMIT overrides the free default", async () => {
+    const env = makeEnv({ FREE_DAILY_LIMIT: "1" }, "free");
+    const deps = makeDeps();
+    expect((await handleAnalyze(post(ok), env, deps)).status).toBe(200);
+    expect((await handleAnalyze(post(ok), env, deps)).status).toBe(429);
+  });
+  it("502 when Workers AI throws on the free plan", async () => {
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    const r = await handleAnalyze(post(ok), makeEnv({}, "free"), makeDeps({ callWorkersAi: async () => { throw new Error("boom"); } }));
+    expect(r.status).toBe(502);
   });
   it("200 with normalized body", async () => {
     const r = await handleAnalyze(post(ok), makeEnv(), makeDeps());

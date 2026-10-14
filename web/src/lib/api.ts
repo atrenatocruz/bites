@@ -55,3 +55,51 @@ export async function analyze(req: AnalyzeRequest, token: string | null): Promis
 export function errorKey(e: unknown): string {
   return e instanceof ApiError ? `errors.${e.code}` : "errors.generic";
 }
+
+export interface PlanInfo { plan: "free" | "paid"; dailyLimit: number; unlocked: boolean }
+
+async function authedJson<T>(path: string, init: RequestInit, token: string | null): Promise<{ ok: boolean; status: number; body: (T & { error?: string }) | null }> {
+  const headers: Record<string, string> = { "content-type": "application/json", "x-device-id": deviceId() };
+  if (token) headers.authorization = `Bearer ${token}`;
+  const res = await fetch(`${BASE}${path}`, { ...init, headers });
+  let body: (T & { error?: string }) | null = null;
+  try {
+    body = await res.json();
+  } catch {
+    body = null;
+  }
+  return { ok: res.ok, status: res.status, body };
+}
+
+/** The signed-in user's plan, or null when the server can't be reached. */
+export async function getPlan(token: string | null): Promise<PlanInfo | null> {
+  try {
+    const r = await authedJson<PlanInfo>("/api/plan", { method: "GET" }, token);
+    return r.ok && r.body && (r.body.plan === "free" || r.body.plan === "paid") ? r.body : null;
+  } catch {
+    return null;
+  }
+}
+
+/** Switch plan. Going paid works only once Premium is unlocked. */
+export async function setPlan(plan: "free" | "paid", token: string | null): Promise<PlanInfo | null> {
+  try {
+    const r = await authedJson<PlanInfo>("/api/plan", { method: "POST", body: JSON.stringify({ plan }) }, token);
+    return r.ok && r.body && (r.body.plan === "free" || r.body.plan === "paid") ? r.body : null;
+  } catch {
+    return null;
+  }
+}
+
+export type RedeemResult = { ok: true; plan: PlanInfo } | { ok: false; reason: "invalid" | "limited" | "failed" };
+
+export async function redeemCode(code: string, token: string | null): Promise<RedeemResult> {
+  try {
+    const r = await authedJson<PlanInfo>("/api/redeem", { method: "POST", body: JSON.stringify({ code }) }, token);
+    if (r.ok && r.body) return { ok: true, plan: r.body };
+    if (r.status === 429) return { ok: false, reason: "limited" };
+    return { ok: false, reason: r.body?.error === "invalid_code" ? "invalid" : "failed" };
+  } catch {
+    return { ok: false, reason: "failed" };
+  }
+}

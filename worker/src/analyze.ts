@@ -1,12 +1,14 @@
 import { dayKey, type AnalyzeRequest } from "@bites/shared";
 import { normalizeAiOutput, NormalizeError } from "./normalize";
 import { checkAndCount } from "./ratelimit";
+import { dailyLimit, getPlan } from "./plan";
+import type { AiOutcome, callWorkersAi as CallWorkersAi } from "./workersai";
 import { MOCK_RESULT } from "./mock";
 import type { Env } from "./env";
 import type { callClaude as CallClaude } from "./claude";
 import type { verifyRequest as VerifyRequest } from "./auth";
 
-export interface Deps { callClaude: typeof CallClaude; verifyRequest: typeof VerifyRequest; now: () => Date }
+export interface Deps { callClaude: typeof CallClaude; callWorkersAi: typeof CallWorkersAi; verifyRequest: typeof VerifyRequest; now: () => Date }
 const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json" } });
 
 export async function handleAnalyze(req: Request, env: Env, deps: Deps): Promise<Response> {
@@ -24,13 +26,14 @@ export async function handleAnalyze(req: Request, env: Env, deps: Deps): Promise
 
   const uid = await deps.verifyRequest(req, env);
   if (!uid) return json({ error: "unauthorized" }, 401);
-  if (!(await checkAndCount(env.RATE_KV, uid, dayKey(deps.now()), Number(env.DAILY_LIMIT ?? 30))))
-    return json({ error: "rate_limited" }, 429);
+  const plan = await getPlan(env.RATE_KV, uid);
+  if (!(await checkAndCount(env.RATE_KV, uid, dayKey(deps.now()), dailyLimit(plan, env))))
+    return json({ error: "rate_limited", plan }, 429);
 
   if (env.MOCK_AI === "1") return json(MOCK_RESULT);
 
-  let out;
-  try { out = await deps.callClaude(body, env); } catch (e) { console.error(e); return json({ error: "upstream" }, 502); }
+  let out: AiOutcome;
+  try { out = plan === "paid" ? await deps.callClaude(body, env) : await deps.callWorkersAi(body, env); } catch (e) { console.error(e); return json({ error: "upstream" }, 502); }
   if (out.kind === "refusal") return json({ error: "refusal" }, 422);
   if (out.kind === "truncated") return json({ error: "bad_output" }, 422);
   try {

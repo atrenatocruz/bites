@@ -6,6 +6,7 @@ import PillButton from "../../components/PillButton";
 import Sheet from "../../components/Sheet";
 import { toast } from "../../components/Toast";
 import { applyProfileLocale } from "../../i18n";
+import { getPlan, redeemCode, setPlan as switchPlan, type PlanInfo } from "../../lib/api";
 import { download, toCSV, toJSON } from "../../lib/export";
 import type { AuthUser } from "../../lib/repo";
 import { energyUnit, formatEnergy } from "../../lib/stats";
@@ -78,6 +79,10 @@ export default function SettingsSheet({ open, onClose, onRedo }: SettingsSheetPr
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [account, setAccount] = useState<AuthUser | null>(null);
   const [draft, setDraft] = useState("");
+  const [plan, setPlan] = useState<PlanInfo | null>(null);
+  const [code, setCode] = useState("");
+  const [redeeming, setRedeeming] = useState(false);
+  const [switching, setSwitching] = useState(false);
 
   const units = profile?.units ?? "kcal";
   const target = profile?.kcalTarget;
@@ -94,6 +99,38 @@ export default function SettingsSheet({ open, onClose, onRedo }: SettingsSheetPr
       live = false;
     };
   }, [open, repo]);
+
+  useEffect(() => {
+    if (!open) return;
+    let live = true;
+    void repo.getIdToken().then((token) => getPlan(token)).then((p) => live && setPlan(p)).catch(() => live && setPlan(null));
+    return () => {
+      live = false;
+    };
+  }, [open, repo]);
+
+  const applyCode = async () => {
+    if (!code.trim() || redeeming) return;
+    setRedeeming(true);
+    const result = await redeemCode(code, await repo.getIdToken().catch(() => null));
+    setRedeeming(false);
+    if (result.ok) {
+      setPlan(result.plan);
+      setCode("");
+      toast(t("settings.codeOk"));
+    } else {
+      toast(t(result.reason === "invalid" ? "settings.codeInvalid" : result.reason === "limited" ? "settings.codeLimited" : "errors.generic"));
+    }
+  };
+
+  const togglePlan = async () => {
+    if (!plan || switching) return;
+    setSwitching(true);
+    const next = await switchPlan(plan.plan === "paid" ? "free" : "paid", await repo.getIdToken().catch(() => null));
+    setSwitching(false);
+    if (next) setPlan(next);
+    else toast(t("errors.generic"));
+  };
 
   const save = async (next: Profile) => {
     useStore.getState().setProfile(next);
@@ -238,6 +275,55 @@ export default function SettingsSheet({ open, onClose, onRedo }: SettingsSheetPr
                 />
               </section>
             </>
+          )}
+
+          {plan && (
+            <Group title={t("settings.plan")}>
+              <div className={rowClass}>
+                <span className="min-w-0">
+                  <span className="block text-body">{t(plan.plan === "paid" ? "settings.planPaid" : "settings.planFree")}</span>
+                  <span className="block text-subhead text-fg-2">{t(plan.plan === "paid" ? "settings.planPaidHint" : "settings.planFreeHint", { count: plan.dailyLimit })}</span>
+                </span>
+                {plan.unlocked && (
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={plan.plan === "paid"}
+                    aria-label={t("settings.planToggle")}
+                    disabled={switching}
+                    onClick={() => void togglePlan()}
+                    className={`relative h-8 w-[52px] shrink-0 rounded-full transition-colors disabled:opacity-60 ${plan.plan === "paid" ? "bg-accent" : "bg-sep"}`}
+                  >
+                    <span className={`absolute left-1 top-1 size-6 rounded-full bg-white shadow transition-transform duration-200 motion-reduce:transition-none ${plan.plan === "paid" ? "translate-x-5" : ""}`} />
+                  </button>
+                )}
+              </div>
+              {!plan.unlocked && (
+                <form
+                  className={rowClass}
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    void applyCode();
+                  }}
+                >
+                  <input
+                    type="text"
+                    value={code}
+                    onChange={(e) => setCode(e.target.value.slice(0, 64))}
+                    aria-label={t("settings.codeLabel")}
+                    placeholder={t("settings.codePlaceholder")}
+                    autoCapitalize="none"
+                    autoCorrect="off"
+                    spellCheck={false}
+                    autoComplete="off"
+                    className="min-w-0 flex-1 bg-transparent text-body outline-none placeholder:text-fg-2 focus-visible:ring-2 focus-visible:ring-accent"
+                  />
+                  <button type="submit" disabled={!code.trim() || redeeming} className="shrink-0 text-body font-semibold text-accent-text active:opacity-60 disabled:opacity-40">
+                    {t("settings.codeApply")}
+                  </button>
+                </form>
+              )}
+            </Group>
           )}
 
           {repo.kind !== "local" && (

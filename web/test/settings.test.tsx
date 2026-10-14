@@ -106,4 +106,79 @@ describe("SettingsSheet", () => {
     renderSheet();
     expect(screen.queryByText("Sign in with Google")).toBeNull();
   });
+
+  describe("plan and upgrade code", () => {
+    const stubFetch = (handler: (url: string, init?: RequestInit) => { status?: number; body: unknown }) => {
+      const fn = vi.fn(async (url: string, init?: RequestInit) => {
+        const { status = 200, body } = handler(url, init);
+        return new Response(JSON.stringify(body), { status });
+      });
+      vi.stubGlobal("fetch", fn);
+      return fn;
+    };
+    afterEach(() => vi.unstubAllGlobals());
+
+    it("shows the free plan with an upgrade-code field and unlocks premium with a valid code", async () => {
+      let plan = { plan: "free", dailyLimit: 5, unlocked: false };
+      const fetchFn = stubFetch((url) => (url.endsWith("/api/redeem") ? ((plan = { plan: "paid", dailyLimit: 30, unlocked: true }), { body: { ok: true, ...plan } }) : { body: plan }));
+      renderSheet();
+      expect(await screen.findByText("Basic AI · 5 scans a day")).toBeTruthy();
+      fireEvent.change(screen.getByLabelText("Upgrade code"), { target: { value: "renatonaprozis" } });
+      fireEvent.click(screen.getByRole("button", { name: "Apply" }));
+      expect(await screen.findByText("Best AI · 30 scans a day")).toBeTruthy();
+      expect(screen.queryByLabelText("Upgrade code")).toBeNull();
+      const redeem = fetchFn.mock.calls.find(([u]) => String(u).endsWith("/api/redeem"))!;
+      expect(JSON.parse(String((redeem[1] as RequestInit).body))).toEqual({ code: "renatonaprozis" });
+    });
+
+    it("keeps the free plan after an invalid code", async () => {
+      stubFetch((url) => (url.endsWith("/api/redeem") ? { status: 400, body: { error: "invalid_code" } } : { body: { plan: "free", dailyLimit: 5, unlocked: false } }));
+      renderSheet();
+      await screen.findByText("Basic AI · 5 scans a day");
+      fireEvent.change(screen.getByLabelText("Upgrade code"), { target: { value: "wrong" } });
+      fireEvent.click(screen.getByRole("button", { name: "Apply" }));
+      await waitFor(() => expect((screen.getByRole("button", { name: "Apply" }) as HTMLButtonElement).disabled).toBe(false));
+      expect(screen.getByLabelText("Upgrade code")).toBeTruthy();
+      expect(screen.getByText("Basic AI · 5 scans a day")).toBeTruthy();
+    });
+
+    it("lets an unlocked user switch between free and premium with a toggle", async () => {
+      let plan = { plan: "paid", dailyLimit: 30, unlocked: true };
+      const fetchFn = stubFetch((url, init) => {
+        if (url.endsWith("/api/plan") && init?.method === "POST") {
+          const wanted = JSON.parse(String(init.body)).plan;
+          plan = { ...plan, plan: wanted, dailyLimit: wanted === "paid" ? 30 : 5 };
+        }
+        return { body: plan };
+      });
+      renderSheet();
+      const toggle = (await screen.findByRole("switch", { name: "Use Premium" })) as HTMLButtonElement;
+      expect(toggle.getAttribute("aria-checked")).toBe("true");
+      expect(screen.queryByLabelText("Upgrade code")).toBeNull();
+
+      fireEvent.click(toggle);
+      expect(await screen.findByText("Basic AI · 5 scans a day")).toBeTruthy();
+      expect(screen.getByRole("switch", { name: "Use Premium" }).getAttribute("aria-checked")).toBe("false");
+      expect(screen.queryByLabelText("Upgrade code")).toBeNull();
+
+      fireEvent.click(screen.getByRole("switch", { name: "Use Premium" }));
+      expect(await screen.findByText("Best AI · 30 scans a day")).toBeTruthy();
+      const posts = fetchFn.mock.calls.filter(([, i]) => (i as RequestInit | undefined)?.method === "POST").map(([, i]) => JSON.parse(String((i as RequestInit).body)));
+      expect(posts).toEqual([{ plan: "free" }, { plan: "paid" }]);
+    });
+
+    it("shows no toggle until Premium is unlocked", async () => {
+      stubFetch(() => ({ body: { plan: "free", dailyLimit: 5, unlocked: false } }));
+      renderSheet();
+      await screen.findByText("Basic AI · 5 scans a day");
+      expect(screen.queryByRole("switch")).toBeNull();
+    });
+
+    it("hides the plan section when the server can't be reached", async () => {
+      vi.stubGlobal("fetch", vi.fn(async () => { throw new Error("offline"); }));
+      renderSheet();
+      await waitFor(() => expect(screen.getByText("Daily target")).toBeTruthy());
+      expect(screen.queryByText("Plan")).toBeNull();
+    });
+  });
 });

@@ -1,5 +1,7 @@
 import { handleAnalyze } from "./analyze";
 import { callClaude } from "./claude";
+import { callWorkersAi } from "./workersai";
+import { handlePlan, handleRedeem, handleSetPlan } from "./redeem";
 import { verifyRequest } from "./auth";
 import type { Env } from "./env";
 
@@ -24,7 +26,11 @@ async function route(req: Request, env: Env): Promise<Response> {
   if (req.method === "OPTIONS") return new Response(null, { status: 204 });
   if (req.method === "GET" && pathname === "/api/health") return Response.json({ ok: true });
   if (req.method === "POST" && pathname === "/api/analyze")
-    return handleAnalyze(req, env, { callClaude, verifyRequest, now: () => new Date() });
+    return handleAnalyze(req, env, { callClaude, callWorkersAi, verifyRequest, now: () => new Date() });
+  const planDeps = { verifyRequest, now: () => new Date() };
+  if (req.method === "GET" && pathname === "/api/plan") return handlePlan(req, env, planDeps);
+  if (req.method === "POST" && pathname === "/api/plan") return handleSetPlan(req, env, planDeps);
+  if (req.method === "POST" && pathname === "/api/redeem") return handleRedeem(req, env, planDeps);
   return Response.json({ error: "not_found" }, { status: 404 });
 }
 

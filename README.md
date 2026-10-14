@@ -157,3 +157,29 @@ worker/   Cloudflare Worker (src/, test/, wrangler.toml)
 web/      PWA (src/features/*, src/lib/repo/{local,firebase}.ts)
 docs/     design spec
 ```
+
+## Plans
+
+Scans are limited per user per day and the model depends on the plan:
+
+| Plan | Model | Daily scans |
+| --- | --- | --- |
+| Free (default) | Cloudflare Workers AI, `@cf/meta/llama-4-scout-17b-16e-instruct` | `FREE_DAILY_LIMIT` (5) |
+| Paid | Claude (`AI_MODEL`) | `DAILY_LIMIT` (30) |
+
+The plan lives in KV as `plan:<firebase uid>`; any value other than `paid` means free. Until payments exist, switch a user by hand:
+
+```bash
+npx wrangler kv key put "plan:<uid>" paid --binding RATE_KV --remote   # upgrade
+npx wrangler kv key delete "plan:<uid>" --binding RATE_KV --remote     # back to free
+```
+
+### Upgrade codes
+
+Settings shows a **Plan** section with an "Upgrade with a code" field for free users. A valid code sets `plan:<uid>` to `paid` for good. Codes are stored only as SHA-256 hashes (lowercase, trimmed) in `REDEEM_CODE_HASHES` in `worker/wrangler.toml`, comma separated. Each user gets 10 guesses a day.
+
+```bash
+printf 'my-new-code' | sha256sum   # add the hex to REDEEM_CODE_HASHES
+```
+
+Once a user has unlocked Premium (by code, or by being set to `paid`), Settings shows a **Use Premium** toggle to switch between the free and paid plan; accounts that never unlocked it only see the code field. Unlocking is remembered as `unlocked:<uid>` in KV.
