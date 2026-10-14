@@ -36,6 +36,8 @@ export default defineConfig({
       workbox: { navigateFallback: "/index.html", runtimeCaching: [] },
     }),
   ],
+  // The shared app shell (react, framer-motion, i18next) is one ~550 kB chunk; recharts and firebase are already lazy.
+  build: { chunkSizeWarningLimit: 600 },
   server: { proxy: { "/api": "http://localhost:8787" } },
   test: {
     environment: "jsdom",

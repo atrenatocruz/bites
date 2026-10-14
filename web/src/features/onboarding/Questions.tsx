@@ -71,7 +71,7 @@ function NumberField({ id, label, value, unit, onChange, invalid }: { id: string
           autoComplete="off"
           value={value}
           onChange={(e) => onChange(e.target.value.replace(/[^0-9.]/g, "").slice(0, 6))}
-          className="tabular min-w-0 flex-1 bg-transparent text-[34px] font-bold leading-[41px] tracking-[-0.02em] outline-none"
+          className="tabular min-w-0 flex-1 bg-transparent text-[34px] font-bold leading-[41px] tracking-[-0.02em] outline-none focus-visible:ring-2 focus-visible:ring-accent"
         />
         <span className="text-body text-fg-2">{unit}</span>
       </div>

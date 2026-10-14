@@ -66,7 +66,7 @@ export default function ItemEditor({ item, onGrams, onRemove }: ItemEditorProps)
             min={0}
             max={MAX_GRAMS}
             aria-label={label}
-            className="tabular w-12 bg-transparent text-center text-body outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none"
+            className="tabular w-12 rounded-md bg-transparent text-center text-body outline-none focus-visible:ring-2 focus-visible:ring-accent [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none"
             value={draft ?? String(item.grams)}
             onChange={(e) => {
               setDraft(e.target.value);

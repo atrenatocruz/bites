@@ -193,7 +193,7 @@ export default function SettingsSheet({ open, onClose, onRedo }: SettingsSheetPr
                       onChange={(e) => setDraft(e.target.value.replace(/[^0-9]/g, "").slice(0, 5))}
                       onBlur={commitDraft}
                       onKeyDown={(e) => e.key === "Enter" && e.currentTarget.blur()}
-                      className="tabular w-20 bg-transparent text-right text-body font-semibold outline-none"
+                      className="tabular w-20 bg-transparent text-right text-body font-semibold outline-none focus-visible:ring-2 focus-visible:ring-accent"
                     />
                     <span className="text-body text-fg-2">{energyUnit(units)}</span>
                   </span>

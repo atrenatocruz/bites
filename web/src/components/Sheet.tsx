@@ -16,6 +16,7 @@ export default function Sheet({ open, onClose, children, snap = "auto" }: SheetP
   const reduce = useReducedMotion();
   const controls = useDragControls();
   const pressAt = useRef<{ x: number; y: number } | null>(null);
+  const dragged = useRef(false);
   return (
     <AnimatePresence>
       {open && (
@@ -46,15 +47,30 @@ export default function Sheet({ open, onClose, children, snap = "auto" }: SheetP
             }}
           >
             <div className="flex shrink-0 justify-center pb-2 pt-2.5">
-              <button type="button" onClick={(e) => {
-                  const start = pressAt.current;
-                  pressAt.current = null;
-                  if (!start || Math.hypot(e.clientX - start.x, e.clientY - start.y) < 6) onClose();
+              <button
+                type="button"
+                onClick={(e) => {
+                  const wasDrag = dragged.current;
+                  dragged.current = false;
+                  if (e.detail === 0 || !wasDrag) onClose();
                 }}
                 onPointerDown={(e) => {
                   pressAt.current = { x: e.clientX, y: e.clientY };
+                  dragged.current = false;
                   controls.start(e);
-                }} aria-label={t("common.close")} className="h-5 w-16 cursor-grab touch-none">
+                }}
+                onPointerUp={(e) => {
+                  const start = pressAt.current;
+                  pressAt.current = null;
+                  dragged.current = !!start && Math.hypot(e.clientX - start.x, e.clientY - start.y) >= 6;
+                }}
+                onPointerCancel={() => {
+                  pressAt.current = null;
+                  dragged.current = false;
+                }}
+                aria-label={t("common.close")}
+                className="h-5 w-16 cursor-grab touch-none"
+              >
                 <span className="mx-auto mt-2 block h-1 w-9 rounded-full bg-sep" />
               </button>
             </div>

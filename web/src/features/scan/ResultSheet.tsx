@@ -178,7 +178,7 @@ export default function ResultSheet({ open, result, source, thumb, hint, onClose
                   onChange={(e) => setAnswer(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && void submitFollowUp()}
                   placeholder={t("result.followUpPlaceholder")}
-                  className="min-w-0 flex-1 rounded-full bg-bg px-4 py-2 text-body outline-none placeholder:text-fg-2"
+                  className="min-w-0 flex-1 rounded-full bg-bg px-4 py-2 text-body outline-none focus-visible:ring-2 focus-visible:ring-accent placeholder:text-fg-2"
                 />
                 <PillButton variant="primary" className="!h-10 !px-5" disabled={busy === "followUp" || !answer.trim()} onClick={() => void submitFollowUp()}>
                   {busy === "followUp" ? t("scan.analyzing") : t("common.update")}

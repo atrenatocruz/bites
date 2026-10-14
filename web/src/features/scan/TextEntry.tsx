@@ -48,7 +48,7 @@ export default function TextEntry({ open, mode, onClose, onSubmit }: TextEntryPr
           value={text}
           onChange={(e) => setText(e.target.value)}
           placeholder={t("scan.describePlaceholder")}
-          className="w-full resize-none rounded-card bg-elevated p-4 text-body outline-none placeholder:text-fg-2"
+          className="w-full resize-none rounded-card bg-elevated p-4 text-body outline-none focus-visible:ring-2 focus-visible:ring-accent placeholder:text-fg-2"
         />
         {error && (
           <p role="alert" className="text-subhead text-fg-2">

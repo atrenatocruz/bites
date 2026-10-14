@@ -72,7 +72,7 @@ describe("HistoryScreen", () => {
     fireEvent.change(screen.getByPlaceholderText("Search meals"), { target: { value: "porridge" } });
     const today = screen.getByRole("heading", { name: /^Today/ });
     await waitFor(() => expect(within(today).getByText("500")).toBeTruthy());
-    expect(screen.queryByText("Pão com queijo")).toBeNull();
+    expect(screen.queryByText("PÃ£o com queijo")).toBeNull();
   });
 
   it("ignores a second delete of the same meal while the first is in flight", async () => {

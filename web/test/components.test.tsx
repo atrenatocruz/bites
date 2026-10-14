@@ -37,6 +37,8 @@ describe("Ring label", () => {
   });
 });
 
+const pointer = (el: Element, type: string, init: MouseEventInit) => fireEvent(el, new MouseEvent(type, { bubbles: true, ...init }));
+
 describe("Sheet", () => {
   it("renders content and closes from the handle", () => {
     let closed = false;
@@ -50,11 +52,18 @@ describe("Sheet", () => {
     let closed = false;
     render(<Sheet open onClose={() => { closed = true; }}><p>Hello</p></Sheet>);
     const handle = screen.getByRole("button", { name: /close/i });
-    fireEvent.pointerDown(handle, { clientX: 100, clientY: 100 });
-    fireEvent.click(handle, { clientX: 100, clientY: 150 });
+    pointer(handle, "pointerdown", { clientX: 100, clientY: 100 });
+    pointer(handle, "pointerup", { clientX: 100, clientY: 150 });
+    fireEvent.click(handle, { detail: 1 });
     expect(closed).toBe(false);
-    fireEvent.pointerDown(handle, { clientX: 100, clientY: 100 });
-    fireEvent.click(handle, { clientX: 101, clientY: 101 });
+    pointer(handle, "pointerdown", { clientX: 100, clientY: 100 });
+    pointer(handle, "pointerup", { clientX: 101, clientY: 101 });
+    fireEvent.click(handle, { detail: 1 });
+    expect(closed).toBe(true);
+    closed = false;
+    pointer(handle, "pointerdown", { clientX: 0, clientY: 0 });
+    pointer(handle, "pointerup", { clientX: 0, clientY: 90 });
+    fireEvent.click(handle, { detail: 0 });
     expect(closed).toBe(true);
   });
 });

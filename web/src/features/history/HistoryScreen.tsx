@@ -160,7 +160,7 @@ export default function HistoryScreen() {
           onChange={(e) => setQuery(e.target.value)}
           placeholder={t("history.searchPlaceholder")}
           aria-label={t("common.search")}
-          className="h-10 w-full rounded-full bg-elevated pl-10 pr-4 text-body outline-none placeholder:text-fg-2"
+          className="h-10 w-full rounded-full bg-elevated pl-10 pr-4 text-body outline-none focus-visible:ring-2 focus-visible:ring-accent placeholder:text-fg-2"
         />
       </label>
 
