@@ -183,3 +183,7 @@ printf 'my-new-code' | sha256sum   # add the hex to REDEEM_CODE_HASHES
 ```
 
 Once a user has unlocked Premium (by code, or by being set to `paid`), Settings shows a **Use Premium** toggle to switch between the free and paid plan; accounts that never unlocked it only see the code field. Unlocking is remembered as `unlocked:<uid>` in KV.
+
+## Apple Health
+
+An Apple Shortcut ("Bites Health") sends the last 7 days of Health energy and workouts to `POST /api/activity/sync` with a personal key from Settings. How to build and share it: [docs/apple-health-shortcut.md](docs/apple-health-shortcut.md). The web build reads the shared iCloud link from `VITE_HEALTH_SHORTCUT_URL`; while it is empty, the Connect button is hidden.
