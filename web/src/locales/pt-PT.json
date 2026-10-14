@@ -101,6 +101,16 @@
       "conditionNote": "Esta é uma estimativa geral. Confirma-a com o teu médico ou nutricionista."
     }
   },
+  "install": {
+    "title": "Adiciona o Bites ao ecrã principal",
+    "bodyAndroid": "Abre-o como qualquer outra app, em ecrã inteiro e sempre à distância de um toque.",
+    "bodyIos": "Abre-o como qualquer outra app, em ecrã inteiro e sempre à distância de um toque. São só três toques.",
+    "button": "Adicionar ao ecrã principal",
+    "done": "Já adicionei",
+    "skip": "Agora não",
+    "android": { "menu": "Toca no menu do navegador", "add": "Escolhe Instalar app ou Adicionar ao ecrã principal" },
+    "ios": { "share": "Toca no botão Partilhar no Safari", "add": "Desce e toca em Adicionar ao Ecrã Principal", "confirm": "Toca em Adicionar e abre o Bites a partir do ecrã principal" }
+  },
   "tabs": { "history": "Histórico", "scan": "Scan", "diary": "Diário" },
   "scan": {
     "scaleHint": "Inclui um garfo ou a tua mão para dar escala.",

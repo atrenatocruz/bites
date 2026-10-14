@@ -101,6 +101,16 @@
       "conditionNote": "This is a general estimate. Check it with your doctor or dietitian."
     }
   },
+  "install": {
+    "title": "Add Bites to your home screen",
+    "bodyAndroid": "Open it like any other app, full screen and always one tap away.",
+    "bodyIos": "Open it like any other app, full screen and always one tap away. It only takes three taps.",
+    "button": "Add to home screen",
+    "done": "I've added it",
+    "skip": "Not now",
+    "android": { "menu": "Tap the menu in your browser", "add": "Choose Install app or Add to Home screen" },
+    "ios": { "share": "Tap the Share button in Safari", "add": "Scroll down and tap Add to Home Screen", "confirm": "Tap Add, then open Bites from your home screen" }
+  },
   "tabs": { "history": "History", "scan": "Scan", "diary": "Diary" },
   "scan": {
     "scaleHint": "Include a fork or your hand for scale.",
