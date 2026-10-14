@@ -82,6 +82,26 @@ describe("SettingsSheet", () => {
     expect(await repo.getProfile()).toBeNull();
   });
 
+  it("shows the Google account and signs out back to onboarding", async () => {
+    const signOut = vi.fn(async () => {});
+    useStore.setState({
+      repo: Object.assign(Object.create(repo), {
+        kind: "firebase" as const,
+        currentUser: async () => ({ uid: "u1", email: "ana@example.com", name: "Ana Silva" }),
+        signOut,
+      }),
+    });
+    const onClose = vi.fn();
+    render(<SettingsSheet open onClose={onClose} onRedo={() => {}} />);
+    expect(await screen.findByText("Ana Silva")).toBeTruthy();
+    expect(screen.getByText("ana@example.com")).toBeTruthy();
+    expect(screen.queryByText("Anonymous")).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "Sign out" }));
+    await waitFor(() => expect(useStore.getState().profile).toBeNull());
+    expect(signOut).toHaveBeenCalledTimes(1);
+    expect(onClose).toHaveBeenCalled();
+  });
+
   it("hides the account section for the local repo", () => {
     renderSheet();
     expect(screen.queryByText("Sign in with Google")).toBeNull();

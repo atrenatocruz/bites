@@ -29,7 +29,11 @@ export default function App({ skipSplash = false }: AppProps) {
   useEffect(() => {
     let live = true;
     setFailed(false);
-    repo.getProfile().then(
+    const load = async () => {
+      const user = repo.currentUser ? await repo.currentUser() : true;
+      return user ? await repo.getProfile() : null;
+    };
+    load().then(
       (p) => {
         if (!live) return;
         useStore.getState().setProfile(p);

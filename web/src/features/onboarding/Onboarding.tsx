@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { kcalTarget, macroTargets, type Profile } from "@bites/shared";
 import { toast } from "../../components/Toast";
@@ -25,6 +25,18 @@ export default function Onboarding({ onDone, initial, onCancel }: OnboardingProp
   const [answers, setAnswers] = useState<Answers>(initial ? answersFrom(initial) : DEFAULT_ANSWERS);
   const [override, setOverride] = useState<number | null>(null);
   const [busy, setBusy] = useState(false);
+  const [signedIn, setSignedIn] = useState(Boolean(initial));
+  const [notice, setNotice] = useState<string | null>(null);
+  const googleFlow = repo.kind === "firebase" && !signedIn;
+
+  useEffect(() => {
+    if (initial || !repo.currentUser) return;
+    let live = true;
+    repo.currentUser().then((u) => live && u && setSignedIn(true), () => {});
+    return () => {
+      live = false;
+    };
+  }, [repo, initial]);
 
   const fields = {
     sex: answers.sex ?? "female",
@@ -62,20 +74,37 @@ export default function Onboarding({ onDone, initial, onCancel }: OnboardingProp
     }
   };
 
-  const withGoogle = async () => {
+  const signIn = async (fresh: () => Promise<void>) => {
     setBusy(true);
+    setNotice(null);
     try {
-      const profile = build();
-      await repo.saveProfile(profile);
       await repo.signInWithGoogle?.();
-      await finish((await repo.getProfile()) ?? profile);
+      const stored = await repo.getProfile();
+      if (stored) {
+        useStore.getState().setProfile(stored);
+        applyProfileLocale(stored.locale);
+        toast(t("toasts.welcomeBack"));
+        onDone(stored);
+      } else {
+        await fresh();
+      }
     } catch (e) {
-      if (!isPopupDismissed(e)) toast(t("errors.generic"));
-      setBusy(false);
+      setNotice(t(isPopupDismissed(e) ? "onboarding.google.cancelled" : "onboarding.google.failed"));
     }
+    setBusy(false);
   };
 
-  if (stage === "slides") return <Slides onDone={() => setStage("questions")} />;
+  const continueWithGoogle = () => signIn(() => finish(build()));
+
+  const signInFromSlides = () =>
+    signIn(async () => {
+      setSignedIn(true);
+      setStage("questions");
+    });
+
+  if (stage === "slides") {
+    return <Slides onDone={() => setStage("questions")} onSignIn={googleFlow ? () => void signInFromSlides() : undefined} notice={notice} busy={busy} />;
+  }
 
   if (stage === "questions") {
     return (
@@ -85,7 +114,10 @@ export default function Onboarding({ onDone, initial, onCancel }: OnboardingProp
           setAnswers((a) => ({ ...a, ...patch }));
           setOverride(null);
         }}
-        onFinish={() => setStage("plan")}
+        onFinish={() => {
+          setNotice(null);
+          setStage("plan");
+        }}
         onExit={() => (initial ? onCancel?.() : setStage("slides"))}
       />
     );
@@ -97,8 +129,9 @@ export default function Onboarding({ onDone, initial, onCancel }: OnboardingProp
       weightKg={fields.weightKg}
       goal={fields.goal}
       onKcalChange={setOverride}
-      onStart={() => void start()}
-      onGoogle={repo.kind === "local" ? undefined : () => void withGoogle()}
+      onStart={() => void (googleFlow ? continueWithGoogle() : start())}
+      google={googleFlow}
+      notice={notice}
       busy={busy}
     />
   );
