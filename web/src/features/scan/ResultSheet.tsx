@@ -187,6 +187,8 @@ export default function ResultSheet({ open, result, source, thumb, hint, onClose
               <div className="mt-3 flex gap-2">
                 <input
                   value={answer}
+                  enterKeyHint="send"
+                  maxLength={200}
                   onChange={(e) => setAnswer(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && void submitFollowUp()}
                   placeholder={t("result.followUpPlaceholder")}

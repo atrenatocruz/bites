@@ -1,9 +1,10 @@
-import { useState, type ReactNode } from "react";
+import { useRef, useState, type ReactNode } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { ChevronLeft } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { bmi, type Activity, type Goal, type Health, type Pace, type Profile, type Sex, type WorkType } from "@bites/shared";
 import PillButton from "../../components/PillButton";
+import { sanitizeDecimal, selectAllOnFocus } from "../../lib/keyboard";
 
 export interface Answers {
   goal: Goal;
@@ -88,20 +89,29 @@ function Option({ selected, onClick, children, className = "" }: { selected: boo
   );
 }
 
-function NumberField({ id, label, value, unit, onChange, invalid }: { id: string; label: string; value: string; unit: string; onChange: (v: string) => void; invalid: boolean }) {
+function NumberField({ id, label, value, unit, onChange, invalid, decimal = true }: { id: string; label: string; value: string; unit: string; onChange: (v: string) => void; invalid: boolean; decimal?: boolean }) {
+  const input = useRef<HTMLInputElement>(null);
   return (
     <div>
       <label htmlFor={id} className="text-caption">
         {label}
       </label>
-      <div className={`mt-1.5 flex items-baseline gap-2 rounded-card bg-elevated px-5 py-3 ${invalid ? "shadow-[inset_0_0_0_2px_var(--over)]" : ""}`}>
+      <div
+        className={`mt-1.5 flex cursor-text items-baseline gap-2 rounded-card bg-elevated px-5 py-3 ${invalid ? "shadow-[inset_0_0_0_2px_var(--over)]" : ""}`}
+        onClick={() => input.current?.focus()}
+      >
         <input
           id={id}
+          ref={input}
           type="text"
-          inputMode="numeric"
+          inputMode={decimal ? "decimal" : "numeric"}
+          enterKeyHint="next"
           autoComplete="off"
+          autoCorrect="off"
+          spellCheck={false}
           value={value}
-          onChange={(e) => onChange(e.target.value.replace(/[^0-9.]/g, "").slice(0, 6))}
+          onFocus={selectAllOnFocus}
+          onChange={(e) => onChange(sanitizeDecimal(e.target.value))}
           className="tabular min-w-0 flex-1 bg-transparent text-[34px] font-bold leading-[41px] tracking-[-0.02em] outline-none focus-visible:ring-2 focus-visible:ring-accent"
         />
         <span className="text-body text-fg-2">{unit}</span>
@@ -206,7 +216,7 @@ export default function Questions({ value, onChange, onFinish, onExit }: Questio
               </div>
               <p className="mt-2 text-caption">{t("onboarding.about.sexNote")}</p>
             </div>
-            <NumberField id="birth-year" label={t("onboarding.about.birthYear")} value={value.birthYear} unit="" invalid={value.birthYear !== "" && !birthOk} onChange={(v) => onChange({ birthYear: v.replace(/\./g, "").slice(0, 4) })} />
+            <NumberField id="birth-year" label={t("onboarding.about.birthYear")} value={value.birthYear} unit="" decimal={false} invalid={value.birthYear !== "" && !birthOk} onChange={(v) => onChange({ birthYear: v.replace(/\./g, "").slice(0, 4) })} />
           </div>
         )}
 

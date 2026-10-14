@@ -3,6 +3,7 @@ import { motion, useReducedMotion } from "framer-motion";
 import { Minus, Plus } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import type { FoodItem } from "@bites/shared";
+import { selectAllOnFocus } from "../../lib/keyboard";
 
 interface ItemEditorProps {
   item: FoodItem;
@@ -63,6 +64,7 @@ export default function ItemEditor({ item, onGrams, onRemove }: ItemEditorProps)
           <input
             type="number"
             inputMode="numeric"
+            enterKeyHint="done"
             min={0}
             max={MAX_GRAMS}
             aria-label={label}
@@ -75,7 +77,7 @@ export default function ItemEditor({ item, onGrams, onRemove }: ItemEditorProps)
             }}
             onBlur={() => setDraft(null)}
             onKeyDown={(e) => e.key === "Enter" && e.currentTarget.blur()}
-            onFocus={(e) => e.target.select()}
+            onFocus={selectAllOnFocus}
           />
           <button type="button" className={stepButton} aria-label={`${label} +${STEP}`} onClick={() => step(STEP)}>
             <Plus size={16} strokeWidth={1.75} aria-hidden="true" />

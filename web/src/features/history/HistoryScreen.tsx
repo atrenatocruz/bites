@@ -156,6 +156,10 @@ export default function HistoryScreen() {
         <Search size={16} strokeWidth={1.75} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-fg-2" aria-hidden="true" />
         <input
           type="search"
+          enterKeyHint="search"
+          autoCapitalize="none"
+          autoCorrect="off"
+          spellCheck={false}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder={t("history.searchPlaceholder")}

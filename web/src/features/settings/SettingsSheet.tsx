@@ -7,6 +7,7 @@ import Sheet from "../../components/Sheet";
 import { toast } from "../../components/Toast";
 import { applyProfileLocale } from "../../i18n";
 import { getPlan, redeemCode, setPlan as switchPlan, type PlanInfo } from "../../lib/api";
+import { selectAllOnFocus } from "../../lib/keyboard";
 import { download, toCSV, toJSON } from "../../lib/export";
 import type { AuthUser } from "../../lib/repo";
 import { energyUnit, formatEnergy } from "../../lib/stats";
@@ -227,7 +228,9 @@ export default function SettingsSheet({ open, onClose, onRedo }: SettingsSheetPr
                     <input
                       type="text"
                       inputMode="numeric"
+                      enterKeyHint="done"
                       value={draft}
+                      onFocus={selectAllOnFocus}
                       onChange={(e) => setDraft(e.target.value.replace(/[^0-9]/g, "").slice(0, 5))}
                       onBlur={commitDraft}
                       onKeyDown={(e) => e.key === "Enter" && e.currentTarget.blur()}
@@ -312,6 +315,7 @@ export default function SettingsSheet({ open, onClose, onRedo }: SettingsSheetPr
                     onChange={(e) => setCode(e.target.value.slice(0, 64))}
                     aria-label={t("settings.codeLabel")}
                     placeholder={t("settings.codePlaceholder")}
+                    enterKeyHint="go"
                     autoCapitalize="none"
                     autoCorrect="off"
                     spellCheck={false}

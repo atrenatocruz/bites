@@ -118,6 +118,22 @@ summary {
   touch-action: manipulation;
 }
 
+input,
+textarea {
+  caret-color: var(--accent);
+}
+
+/* iOS draws its own pill, magnifier and clear button on search fields. */
+input[type="search"] {
+  -webkit-appearance: none;
+  appearance: none;
+}
+input[type="search"]::-webkit-search-decoration,
+input[type="search"]::-webkit-search-cancel-button {
+  -webkit-appearance: none;
+  display: none;
+}
+
 :focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;

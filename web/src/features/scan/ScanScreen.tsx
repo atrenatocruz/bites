@@ -9,6 +9,7 @@ import { useStore } from "../../store";
 import { resolveLocale } from "../../i18n";
 import { analyze, ApiError, errorKey } from "../../lib/api";
 import { compressImage } from "../../lib/image";
+import { focusWithoutScroll } from "../../lib/keyboard";
 import { useCamera } from "./useCamera";
 import ResultSheet from "./ResultSheet";
 import TextEntry from "./TextEntry";
@@ -187,14 +188,16 @@ export default function ScanScreen() {
           <p className="text-center text-subhead text-white/90">{t("scan.scaleHint")}</p>
           {detailOpen ? (
             <input
-              autoFocus
+              ref={focusWithoutScroll}
+              enterKeyHint="done"
+              autoCorrect="off"
               value={hint}
               maxLength={200}
               onChange={(e) => setHint(e.target.value)}
               onBlur={() => setDetailOpen(false)}
               onKeyDown={(e) => e.key === "Enter" && e.currentTarget.blur()}
               placeholder={t("scan.detailPlaceholder")}
-              className="h-9 w-72 max-w-full rounded-full bg-white/90 px-4 text-subhead text-black outline-none focus-visible:ring-2 focus-visible:ring-accent placeholder:text-black/50"
+              className="h-10 w-72 max-w-full rounded-full bg-white/90 px-4 text-body text-black outline-none focus-visible:ring-2 focus-visible:ring-accent placeholder:text-black/50"
             />
           ) : (
             <span className="flex items-center rounded-full bg-white/20 backdrop-blur-[0px]">

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import Sheet from "../../components/Sheet";
 import PillButton from "../../components/PillButton";
+import { focusWithoutScroll } from "../../lib/keyboard";
 import { errorKey } from "../../lib/api";
 
 interface TextEntryProps {
@@ -43,8 +44,10 @@ export default function TextEntry({ open, mode, onClose, onSubmit }: TextEntryPr
       <div className="flex flex-col gap-4 px-5 pb-5 pt-2">
         <h2 className="text-title">{mode === "add" ? t("result.addItemTitle") : t("scan.describeTitle")}</h2>
         <textarea
-          autoFocus
+          ref={focusWithoutScroll}
           rows={3}
+          maxLength={500}
+          enterKeyHint="enter"
           value={text}
           onChange={(e) => setText(e.target.value)}
           placeholder={t("scan.describePlaceholder")}

@@ -1,4 +1,4 @@
-import { useEffect, useRef, type ReactNode } from "react";
+import { useEffect, useRef, useState, type FocusEvent, type ReactNode } from "react";
 import { AnimatePresence, animate, motion, useDragControls, useMotionValue, useReducedMotion } from "framer-motion";
 import { useTranslation } from "react-i18next";
 
@@ -22,6 +22,7 @@ export default function Sheet({ open, onClose, children, snap = "auto" }: SheetP
   const dialog = useRef<HTMLDivElement>(null);
   const scroller = useRef<HTMLDivElement>(null);
   const y = useMotionValue(0);
+  const [keyboard, setKeyboard] = useState(0);
   const close = useRef(onClose);
   close.current = onClose;
 
@@ -44,6 +45,28 @@ export default function Sheet({ open, onClose, children, snap = "auto" }: SheetP
       if (previous?.isConnected) previous.focus({ preventScroll: true });
     };
   }, [open]);
+
+  // On iOS the keyboard covers the page instead of resizing it, so lift the sheet by the covered height.
+  useEffect(() => {
+    const vv = typeof window !== "undefined" ? window.visualViewport : null;
+    if (!open || !vv) return;
+    const update = () => setKeyboard(Math.max(0, Math.round(window.innerHeight - vv.height - vv.offsetTop)));
+    update();
+    vv.addEventListener("resize", update);
+    vv.addEventListener("scroll", update);
+    return () => {
+      vv.removeEventListener("resize", update);
+      vv.removeEventListener("scroll", update);
+      setKeyboard(0);
+    };
+  }, [open]);
+
+  const keepFieldVisible = (e: FocusEvent<HTMLDivElement>) => {
+    const el = e.target;
+    if (!(el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement)) return;
+    // Wait for the keyboard animation, then scroll only the sheet's own content.
+    window.setTimeout(() => el.scrollIntoView?.({ block: "nearest", behavior: "smooth" }), 320);
+  };
 
   // In a standalone PWA there is no browser chrome, so pulling down on the content at the top closes the sheet.
   useEffect(() => {
@@ -100,7 +123,8 @@ export default function Sheet({ open, onClose, children, snap = "auto" }: SheetP
             aria-modal="true"
             tabIndex={-1}
             className={`absolute outline-none inset-x-0 bottom-0 flex flex-col rounded-t-sheet bg-bg pb-[env(safe-area-inset-bottom)] shadow-[0_-8px_40px_rgba(0,0,0,0.12)] ${snap === "full" ? "h-[calc(100%-env(safe-area-inset-top)-16px)]" : "max-h-[92%]"}`}
-            style={{ y }}
+            style={{ y, bottom: keyboard, maxHeight: keyboard ? `calc(100% - ${keyboard}px - env(safe-area-inset-top) - 8px)` : undefined }}
+            onFocusCapture={keepFieldVisible}
             initial={reduce ? { opacity: 0 } : { y: "100%" }}
             animate={reduce ? { opacity: 1 } : { y: 0 }}
             exit={reduce ? { opacity: 0 } : { y: "100%" }}
