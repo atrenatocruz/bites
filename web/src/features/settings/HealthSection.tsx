@@ -108,6 +108,19 @@ export default function HealthSection() {
               <div className="px-4 py-3">
                 <p className="text-subhead">{t("settings.health.copyFailed")}</p>
                 <p className="mt-2 select-all break-all rounded-xl bg-bg px-3 py-2 font-mono text-subhead">{copy.key}</p>
+                <button
+                  type="button"
+                  className="mt-2 text-body font-semibold text-accent-text active:opacity-60"
+                  onClick={() => {
+                    const { key } = copy;
+                    void navigator.clipboard?.writeText(key).then(
+                      () => setCopy({ state: "copied" }),
+                      () => {},
+                    );
+                  }}
+                >
+                  {t("settings.health.copy")}
+                </button>
               </div>
             )}
             {started && link && (

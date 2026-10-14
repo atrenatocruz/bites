@@ -226,6 +226,7 @@
       "connect": "Connect Apple Health",
       "copied": "Key copied ✓ Paste it when the Shortcut asks.",
       "copyFailed": "Copy this key, then paste it when the Shortcut asks:",
+      "copy": "Copy",
       "addShortcut": "Add the Shortcut",
       "finish": "Then tap Sync now and allow access to Health.",
       "syncNow": "Sync now",

@@ -63,6 +63,17 @@ describe("HealthSection", () => {
     expect(screen.getByText("Copy this key, then paste it when the Shortcut asks:")).toBeTruthy();
   });
 
+  it("lets the person copy the shown key with a fresh tap", async () => {
+    const writeText = vi.fn(async () => {});
+    ios({ clipboard: { writeText } });
+    vi.stubGlobal("fetch", vi.fn(notConnected));
+    render(<HealthSection />);
+    fireEvent.click(await screen.findByRole("button", { name: "Connect Apple Health" }));
+    fireEvent.click(await screen.findByRole("button", { name: "Copy" }));
+    expect(writeText).toHaveBeenCalledWith("KEY123");
+    expect(await screen.findByText("Key copied ✓ Paste it when the Shortcut asks.")).toBeTruthy();
+  });
+
   it("shows the connected state and disconnects", async () => {
     ios();
     const fetchMock = vi.fn(async (_url: string, init?: RequestInit) =>
