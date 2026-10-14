@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import type { AnalyzeRequest, AnalyzeResult } from "@bites/shared";
-import { analyze, ApiError } from "../src/lib/api";
+import { analyze, ANALYZE_TIMEOUT_MS, ApiError } from "../src/lib/api";
 
 const RESULT: AnalyzeResult = {
   isFood: true, title: "Toast", mealType: "breakfast",
@@ -79,5 +79,24 @@ describe("analyze", () => {
     expect(first.get("x-device-id")).toBeTruthy();
     expect(first.get("x-device-id")).toBe(second.get("x-device-id"));
     expect(localStorage.getItem("bites.device")).toBe(first.get("x-device-id"));
+  });
+
+  it("gives up with an upstream error when the server never answers", async () => {
+    vi.useFakeTimers();
+    try {
+      fetchMock.mockImplementation((_url: string, init: RequestInit) => new Promise((_, reject) => init.signal!.addEventListener("abort", () => reject(Object.assign(new Error("aborted"), { name: "AbortError" })))));
+      const pending = analyze(REQ, "x").catch((e) => e);
+      await vi.advanceTimersByTimeAsync(ANALYZE_TIMEOUT_MS + 10);
+      const err = await pending;
+      expect(err).toBeInstanceOf(ApiError);
+      expect((err as ApiError).code).toBe("upstream");
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("still reports offline for other network failures", async () => {
+    fetchMock.mockRejectedValue(new TypeError("Failed to fetch"));
+    await expect(analyze(REQ, "x")).rejects.toMatchObject({ code: "offline" });
   });
 });

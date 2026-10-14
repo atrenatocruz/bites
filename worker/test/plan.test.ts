@@ -46,6 +46,25 @@ describe("callWorkersAi", () => {
     expect(await callWorkersAi(req, envWith(async () => ({ response: "not json" })))).toEqual({ kind: "truncated" });
     expect(await callWorkersAi(req, envWith(async () => ({})))).toEqual({ kind: "truncated" });
   });
+  it("gives up when Workers AI never answers, instead of hanging", async () => {
+    vi.useFakeTimers();
+    try {
+      const hang = { AI: { run: () => new Promise(() => {}) }, FREE_AI_TIMEOUT_MS: "5000" } as unknown as Env;
+      const pending = callWorkersAi(req, hang).catch((e) => e);
+      await vi.advanceTimersByTimeAsync(5001);
+      expect(((await pending) as Error).message).toMatch(/timed out/);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+  it("asks for compact output and a low temperature", async () => {
+    const run = vi.fn(async () => ({ response: {} }));
+    await callWorkersAi(req, envWith(run));
+    const input = (run.mock.calls[0] as unknown as [string, any])[1];
+    expect(input.temperature).toBe(0.2);
+    expect(input.max_tokens).toBeLessThanOrEqual(1500);
+    expect(input.messages[1].content[1].text).toContain("compact JSON");
+  });
   it("throws when the AI binding is missing", async () => {
     await expect(callWorkersAi(req, {} as Env)).rejects.toThrow();
   });

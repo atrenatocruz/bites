@@ -9,6 +9,8 @@ export interface Env {
   /** Daily scans on the free plan (Workers AI). */
   FREE_DAILY_LIMIT?: string;
   FREE_AI_MODEL?: string;
+  /** How long the free model may take before the scan fails (default 40000). */
+  FREE_AI_TIMEOUT_MS?: string;
   /** Comma-separated SHA-256 hashes of upgrade codes that unlock the paid plan. */
   REDEEM_CODE_HASHES?: string;
   AI?: Ai;

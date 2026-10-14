@@ -8,6 +8,8 @@ export class ApiError extends Error {
 }
 
 const BASE = import.meta.env.VITE_API_URL ?? "";
+/** A scan that takes longer than this is treated as failed, so the app never waits forever. */
+export const ANALYZE_TIMEOUT_MS = 75_000;
 const DEVICE_KEY = "bites.device";
 
 function deviceId(): string {
@@ -31,10 +33,14 @@ export async function analyze(req: AnalyzeRequest, token: string | null): Promis
   if (token) headers.authorization = `Bearer ${token}`;
 
   let res: Response;
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), ANALYZE_TIMEOUT_MS);
   try {
-    res = await fetch(`${BASE}/api/analyze`, { method: "POST", headers, body: JSON.stringify(req) });
-  } catch {
-    throw new ApiError("offline");
+    res = await fetch(`${BASE}/api/analyze`, { method: "POST", headers, body: JSON.stringify(req), signal: controller.signal });
+  } catch (e) {
+    throw new ApiError((e as { name?: string })?.name === "AbortError" ? "upstream" : "offline");
+  } finally {
+    clearTimeout(timer);
   }
 
   let body: { error?: string; result?: AnalyzeResult } | AnalyzeResult | null = null;

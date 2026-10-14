@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import Sheet from "../../components/Sheet";
+import { AnalyzingDots, FreeModeHint } from "../../components/Analyzing";
 import PillButton from "../../components/PillButton";
 import { focusWithoutScroll } from "../../lib/keyboard";
 import { errorKey } from "../../lib/api";
@@ -58,9 +59,11 @@ export default function TextEntry({ open, mode, onClose, onSubmit }: TextEntryPr
             {error}
           </p>
         )}
-        <PillButton onClick={() => void submit()} disabled={busy || !text.trim()}>
+        <PillButton onClick={() => void submit()} disabled={busy || !text.trim()} className="gap-3">
+          {busy && <AnalyzingDots size={8} />}
           {busy ? t("scan.analyzing") : t("scan.analyze")}
         </PillButton>
+        {busy && <FreeModeHint className="-mt-1" />}
       </div>
     </Sheet>
   );

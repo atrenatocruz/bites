@@ -24,7 +24,7 @@ describe("SettingsSheet", () => {
     repo = new LocalRepo(`bites-set-${++n}`);
     await i18n.changeLanguage("en");
     await repo.saveProfile(base);
-    useStore.setState({ repo, profile: base, dataVersion: 0 });
+    useStore.setState({ repo, profile: base, dataVersion: 0, plan: null });
   });
   afterEach(cleanup);
 

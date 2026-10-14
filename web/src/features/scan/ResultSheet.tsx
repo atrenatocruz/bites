@@ -6,6 +6,7 @@ import { enUS, pt } from "date-fns/locale";
 import { dayKey, macroTargets, scaleItem, sumTotals, type AnalyzeResult, type FoodItem, type MealType } from "@bites/shared";
 import Sheet from "../../components/Sheet";
 import Ring from "../../components/Ring";
+import { AnalyzingDots } from "../../components/Analyzing";
 import PillButton from "../../components/PillButton";
 import { toast } from "../../components/Toast";
 import { useStore } from "../../store";
@@ -194,7 +195,8 @@ export default function ResultSheet({ open, result, source, thumb, hint, onClose
                   placeholder={t("result.followUpPlaceholder")}
                   className="min-w-0 flex-1 rounded-full bg-bg px-4 py-2 text-body outline-none focus-visible:ring-2 focus-visible:ring-accent placeholder:text-fg-2"
                 />
-                <PillButton variant="primary" className="!h-10 !px-5" disabled={busy === "followUp" || !answer.trim()} onClick={() => void submitFollowUp()}>
+                <PillButton variant="primary" className="!h-10 gap-2 !px-5" disabled={busy === "followUp" || !answer.trim()} onClick={() => void submitFollowUp()}>
+                  {busy === "followUp" && <AnalyzingDots size={6} />}
                   {busy === "followUp" ? t("scan.analyzing") : t("common.update")}
                 </PillButton>
               </div>

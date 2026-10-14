@@ -5,10 +5,12 @@ import { useTranslation } from "react-i18next";
 import type { AnalyzeRequest, AnalyzeResult } from "@bites/shared";
 import { toast } from "../../components/Toast";
 import PillButton from "../../components/PillButton";
+import { getPlan } from "../../lib/api";
 import { useStore } from "../../store";
 import { resolveLocale } from "../../i18n";
 import { analyze, ApiError, errorKey } from "../../lib/api";
 import { compressImage } from "../../lib/image";
+import Analyzing from "../../components/Analyzing";
 import { focusWithoutScroll } from "../../lib/keyboard";
 import { useCamera } from "./useCamera";
 import ResultSheet from "./ResultSheet";
@@ -43,6 +45,20 @@ export default function ScanScreen() {
       if (frame) URL.revokeObjectURL(frame);
     };
   }, [frame]);
+
+  // The plan only decides whether to warn that the free model is slower, so a failure here is fine.
+  useEffect(() => {
+    if (useStore.getState().plan) return;
+    let live = true;
+    void repo
+      .getIdToken()
+      .then((token) => getPlan(token))
+      .then((p) => live && p && useStore.getState().setPlanInfo(p))
+      .catch(() => {});
+    return () => {
+      live = false;
+    };
+  }, [repo]);
 
   const call = useCallback(
     async (capture: Capture, extraHint?: string): Promise<AnalyzeResult> => {
@@ -234,14 +250,14 @@ export default function ScanScreen() {
       {phase === "analyzing" && hasFrame && (
         <div className="absolute inset-0 overflow-hidden" role="status" aria-live="polite">
           <div className="shimmer absolute inset-0" />
-          <div className="absolute inset-x-0 bottom-10 flex justify-center">
-            <span className="rounded-full bg-black/50 px-5 py-2 text-headline text-white">{t("scan.analyzing")}</span>
+          <div className="absolute inset-x-0 bottom-10 flex justify-center px-5">
+            <Analyzing className="rounded-card bg-black/60 px-7 py-5 text-white backdrop-blur-md" />
           </div>
         </div>
       )}
       {phase === "analyzing" && !hasFrame && (
         <div className="absolute inset-0 flex items-center justify-center bg-bg text-fg" role="status" aria-live="polite">
-          <span className="text-headline">{t("scan.analyzing")}</span>
+          <Analyzing />
         </div>
       )}
 

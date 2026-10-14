@@ -6,7 +6,7 @@ import PillButton from "../../components/PillButton";
 import Sheet from "../../components/Sheet";
 import { toast } from "../../components/Toast";
 import { applyProfileLocale } from "../../i18n";
-import { getPlan, redeemCode, setPlan as switchPlan, type PlanInfo } from "../../lib/api";
+import { getPlan, redeemCode, setPlan as switchPlan } from "../../lib/api";
 import { selectAllOnFocus } from "../../lib/keyboard";
 import { download, toCSV, toJSON } from "../../lib/export";
 import type { AuthUser } from "../../lib/repo";
@@ -80,7 +80,8 @@ export default function SettingsSheet({ open, onClose, onRedo }: SettingsSheetPr
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [account, setAccount] = useState<AuthUser | null>(null);
   const [draft, setDraft] = useState("");
-  const [plan, setPlan] = useState<PlanInfo | null>(null);
+  const plan = useStore((s) => s.plan);
+  const setPlan = useStore((s) => s.setPlanInfo);
   const [code, setCode] = useState("");
   const [redeeming, setRedeeming] = useState(false);
   const [switching, setSwitching] = useState(false);
