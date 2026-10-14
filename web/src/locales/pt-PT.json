@@ -1,0 +1,144 @@
+{
+  "app": { "name": "Bites", "tagline": "Aponta. Fotografa. Sabe." },
+  "common": {
+    "continue": "Continuar", "back": "Voltar", "cancel": "Cancelar", "done": "Concluído", "save": "Guardar", "edit": "Editar",
+    "delete": "Eliminar", "undo": "Anular", "close": "Fechar", "retry": "Tentar novamente", "update": "Atualizar", "search": "Pesquisar",
+    "kcal": "kcal", "kj": "kJ", "g": "g", "cm": "cm", "kg": "kg", "protein": "Proteína", "carbs": "Hidratos", "fat": "Gordura",
+    "proteinShort": "P", "carbsShort": "H", "fatShort": "G", "remaining": "restantes", "over": "a mais", "eaten": "consumidas", "target": "Objetivo"
+  },
+  "onboarding": {
+    "slides": {
+      "one": { "title": "Aponta. Fotografa. Sabe.", "body": "A tua câmara sabe o que tens no prato." },
+      "two": { "title": "Cada ingrediente, contado.", "body": "O Bites divide a refeição em partes que podes ajustar." },
+      "three": { "title": "O teu dia num relance.", "body": "Um calendário que mostra como estás a correr." }
+    },
+    "illustration": { "rice": "Arroz 150 g · 195 kcal", "chicken": "Frango 120 g · 198 kcal" },
+    "step": "Pergunta {{current}} de {{total}}",
+    "goal": {
+      "title": "Qual é o teu objetivo?",
+      "lose": "Perder peso", "maintain": "Manter o peso", "gain": "Ganhar peso"
+    },
+    "about": {
+      "title": "Sobre ti",
+      "sexLabel": "Sexo", "female": "Feminino", "male": "Masculino",
+      "sexNote": "Usado apenas para estimar o teu metabolismo.",
+      "birthYear": "Ano de nascimento"
+    },
+    "body": {
+      "title": "Altura e peso",
+      "height": "Altura (cm)", "weight": "Peso (kg)",
+      "bmi": "IMC {{value}} · {{category}}",
+      "bmiUnderweight": "abaixo do peso", "bmiHealthy": "saudável", "bmiOverweight": "excesso de peso", "bmiObese": "obesidade"
+    },
+    "activity": {
+      "title": "Qual é o teu nível de atividade?",
+      "sedentary": "Sedentário", "sedentaryHint": "Trabalho de secretária, pouco exercício",
+      "light": "Ligeiro", "lightHint": "Exercício 1–3 dias por semana",
+      "moderate": "Moderado", "moderateHint": "Exercício 3–5 dias por semana",
+      "very": "Muito ativo", "veryHint": "Exercício intenso quase todos os dias"
+    },
+    "plan": {
+      "title": "O teu plano diário",
+      "caption": "calorias por dia",
+      "start": "Começar",
+      "saveWithGoogle": "Guardar com o Google",
+      "footnote": "As estimativas da IA podem falhar 20–40%. Ajusta as porções para maior precisão.",
+      "editTarget": "Calorias diárias"
+    }
+  },
+  "tabs": { "history": "Histórico", "scan": "Scan", "diary": "Diário" },
+  "scan": {
+    "scaleHint": "Inclui um garfo ou a tua mão para dar escala.",
+    "gallery": "Galeria", "type": "Escrever", "shutter": "Tirar fotografia",
+    "addDetail": "Adicionar detalhe",
+    "detailPlaceholder": "ex.: sem molho, meia dose",
+    "analyzing": "A analisar…",
+    "describePlaceholder": "Descreve a refeição, ex.: dois ovos e torrada",
+    "describeTitle": "Escreve",
+    "analyze": "Analisar",
+    "denied": {
+      "title": "Câmara indisponível",
+      "body": "Permite o acesso à câmara no navegador ou escolhe outra forma de adicionar a refeição.",
+      "choosePhoto": "Escolher fotografia", "typeIt": "Escrever"
+    }
+  },
+  "result": {
+    "range": "entre {{low}} e {{high}}",
+    "mealType": "Tipo de refeição",
+    "items": "Ingredientes",
+    "gramsStepper": "Gramas de {{name}}",
+    "lowConfidence": "Confiança baixa",
+    "followUp": "Uma pergunta rápida",
+    "followUpPlaceholder": "A tua resposta",
+    "notFoodTitle": "Isto não parece comida",
+    "notFoodBody": "Tenta outra vez com a refeição no enquadramento.",
+    "save": "Guardar", "retake": "Repetir",
+    "total": "Total"
+  },
+  "mealType": { "breakfast": "Pequeno-almoço", "lunch": "Almoço", "dinner": "Jantar", "snack": "Lanche" },
+  "history": {
+    "title": "Histórico",
+    "searchPlaceholder": "Pesquisar refeições",
+    "today": "Hoje", "yesterday": "Ontem",
+    "empty": "Os teus scans vão aparecer aqui.",
+    "noResults": "Nenhuma refeição corresponde à pesquisa.",
+    "detail": { "title": "Refeição", "logAgain": "Registar de novo hoje", "delete": "Eliminar refeição" },
+    "deleted": "Refeição eliminada"
+  },
+  "diary": {
+    "title": "Diário",
+    "today": "Hoje",
+    "settings": "Definições",
+    "streak": "{{count}} dias seguidos",
+    "weekdays": { "mon": "S", "tue": "T", "wed": "Q", "thu": "Q", "fri": "S", "sat": "S", "sun": "D" },
+    "calendar": { "expand": "Mostrar mês", "collapse": "Ocultar mês", "previous": "Anterior", "next": "Seguinte" },
+    "ring": { "remaining": "restantes", "over": "a mais", "of": "de {{target}} kcal" },
+    "meals": "Refeições",
+    "noMeals": "Ainda nada registado.",
+    "trends": {
+      "title": "Tendências",
+      "week": "Semana", "month": "Mês", "year": "Ano",
+      "average": "Média / dia", "daysOnTarget": "Dias no objetivo", "streak": "Sequência",
+      "streakValue": "{{current}} / melhor {{best}}",
+      "targetLine": "Objetivo",
+      "noData": "Ainda não há dados suficientes."
+    }
+  },
+  "settings": {
+    "title": "Definições",
+    "target": "Objetivo diário",
+    "macros": "Macros",
+    "profile": "Perfil", "profileRedo": "Refazer as perguntas",
+    "language": "Idioma", "languageSystem": "Sistema", "languagePt": "Português", "languageEn": "English",
+    "units": "Unidades",
+    "account": "Conta", "signIn": "Iniciar sessão com o Google", "signOut": "Terminar sessão", "anonymous": "Anónimo",
+    "exportCsv": "Exportar CSV", "exportJson": "Exportar JSON",
+    "deleteAll": "Eliminar todos os dados",
+    "deleteConfirmTitle": "Eliminar tudo?",
+    "deleteConfirmBody": "Todas as tuas refeições e o teu perfil serão removidos. Esta ação não pode ser anulada.",
+    "deleteConfirm": "Eliminar tudo",
+    "about": "Acerca", "version": "Versão {{version}}",
+    "disclaimer": "As estimativas da IA podem falhar 20–40%. Ajusta as porções para maior precisão. O Bites não substitui aconselhamento médico."
+  },
+  "errors": {
+    "offline": "Estás sem ligação. Liga-te à internet para analisar uma refeição.",
+    "rate_limited": "Estás a fazer scans depressa demais. Espera um minuto e tenta outra vez.",
+    "not_food": "Isto não parece comida. Tenta outra vez.",
+    "refusal": "A IA não conseguiu analisar esta imagem. Tenta outra fotografia.",
+    "bad_output": "Algo correu mal ao ler o resultado. Tenta outra vez.",
+    "upstream": "O serviço de IA está com problemas. Tenta novamente daqui a pouco.",
+    "unauthorized": "A tua sessão expirou. Volta a abrir a aplicação.",
+    "bad_request": "Não foi possível enviar. Tenta outra fotografia.",
+    "camera_denied": "O acesso à câmara foi recusado. Escolhe uma fotografia ou escreve a refeição.",
+    "generic": "Algo correu mal. Tenta outra vez."
+  },
+  "toasts": {
+    "added": "Adicionado a hoje",
+    "updated": "Refeição atualizada",
+    "deleted": "Refeição eliminada",
+    "loggedAgain": "Registado de novo hoje",
+    "exported": "Exportação pronta",
+    "allDeleted": "Todos os dados eliminados",
+    "saved": "Guardado"
+  }
+}
