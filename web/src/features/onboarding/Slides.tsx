@@ -137,9 +137,14 @@ const ILLUSTRATIONS: Record<(typeof SLIDES)[number], ReactNode> = {
   three: <DayIllustration />,
 };
 
-interface SlidesProps { onDone: () => void }
+interface SlidesProps {
+  onDone: () => void;
+  onSignIn?: () => void;
+  notice?: string | null;
+  busy?: boolean;
+}
 
-export default function Slides({ onDone }: SlidesProps) {
+export default function Slides({ onDone, onSignIn, notice, busy }: SlidesProps) {
   const { t } = useTranslation();
   const reduce = useReducedMotion();
   const [index, setIndex] = useState(0);
@@ -187,6 +192,18 @@ export default function Slides({ onDone }: SlidesProps) {
         <PillButton className="w-full" onClick={() => go(index + 1)}>
           {t("common.continue")}
         </PillButton>
+        {onSignIn && index === 0 && (
+          <div className="mt-2 text-center">
+            {notice && (
+              <p role="status" className="text-subhead text-fg-2">
+                {notice}
+              </p>
+            )}
+            <PillButton variant="text" onClick={onSignIn} disabled={busy}>
+              {t("onboarding.signIn")}
+            </PillButton>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -12,6 +12,8 @@
       "two": { "title": "Every ingredient, counted.", "body": "Bites splits your meal into parts you can adjust." },
       "three": { "title": "Your day at a glance.", "body": "A calendar that shows how you're doing." }
     },
+    "signIn": "Already have an account? Sign in",
+    "google": { "cancelled": "Sign-in was cancelled. Try again whenever you're ready.", "failed": "Couldn't sign in right now. Please try again." },
     "illustration": { "rice": "Rice 150 g · 195 kcal", "chicken": "Chicken 120 g · 198 kcal" },
     "page": "Page {{current}} of {{total}}",
     "step": "Question {{current}} of {{total}}",
@@ -42,7 +44,7 @@
       "title": "Your daily plan",
       "caption": "calories a day",
       "start": "Start",
-      "saveWithGoogle": "Save with Google",
+      "google": "Continue with Google",
       "footnote": "AI estimates can be off by 20–40%. Adjust portions for accuracy.",
       "editTarget": "Daily calories"
     }
@@ -120,8 +122,7 @@
     "profile": "Profile", "profileRedo": "Redo the questions",
     "language": "Language", "languageSystem": "System", "languagePt": "Português", "languageEn": "English",
     "units": "Units",
-    "account": "Account", "signIn": "Sign in with Google", "signOut": "Sign out", "anonymous": "Anonymous",
-    "mergeTitle": "Sign in with Google?", "mergeBody": "Meals on this device will be merged into your Google account.", "mergeConfirm": "Continue",
+    "account": "Account", "signOut": "Sign out",
     "exportCsv": "Export CSV", "exportJson": "Export JSON",
     "deleteAll": "Delete all data",
     "deleteConfirmTitle": "Delete everything?",
@@ -152,6 +153,7 @@
     "loggedAgain": "Logged again today",
     "exported": "Export ready",
     "allDeleted": "All data deleted",
-    "saved": "Saved"
+    "saved": "Saved",
+    "welcomeBack": "Welcome back"
   }
 }

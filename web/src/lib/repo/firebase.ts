@@ -2,8 +2,6 @@ import { initializeApp } from "firebase/app";
 import {
   GoogleAuthProvider,
   getAuth,
-  linkWithPopup,
-  signInAnonymously,
   signInWithPopup,
   type Auth,
   type User,
@@ -28,9 +26,8 @@ import {
   type WriteBatch,
 } from "firebase/firestore";
 import type { DaySummary, Meal, Profile, Totals } from "@bites/shared";
-import type { AccountInfo, Repo } from "./types";
+import type { AuthUser, Repo } from "./types";
 import { commitLocal } from "./commit";
-import { mergeMeals } from "./merge";
 
 const BATCH_LIMIT = 400;
 
@@ -48,7 +45,6 @@ export class FirebaseRepo implements Repo {
   readonly kind = "firebase" as const;
   private auth: Auth;
   private db: Firestore;
-  private ready: Promise<User> | null = null;
 
   constructor() {
     const app = initializeApp({
@@ -59,18 +55,13 @@ export class FirebaseRepo implements Repo {
     });
     this.auth = getAuth(app);
     this.db = initializeFirestore(app, { localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }) });
-    this.user().catch(() => {});
   }
 
-  private user(): Promise<User> {
-    this.ready ??= (async () => {
-      await this.auth.authStateReady();
-      return this.auth.currentUser ?? (await signInAnonymously(this.auth)).user;
-    })();
-    this.ready.catch(() => {
-      this.ready = null;
-    });
-    return this.ready;
+  private async user(): Promise<User> {
+    await this.auth.authStateReady();
+    const u = this.auth.currentUser;
+    if (!u || u.isAnonymous) throw new Error("not_signed_in");
+    return u;
   }
 
   private async refs() {
@@ -201,33 +192,23 @@ export class FirebaseRepo implements Repo {
   }
 
   async getIdToken() {
-    await this.user();
-    return (await this.auth.currentUser?.getIdToken()) ?? null;
+    await this.auth.authStateReady();
+    const u = this.auth.currentUser;
+    return u && !u.isAnonymous ? await u.getIdToken() : null;
   }
 
-  async getAccount(): Promise<AccountInfo> {
-    const u = await this.user();
-    return { anonymous: u.isAnonymous, email: u.email };
+  async currentUser(): Promise<AuthUser | null> {
+    await this.auth.authStateReady();
+    const u = this.auth.currentUser;
+    // Sessions left over from the old anonymous mode must sign in with Google like everyone else.
+    return u && !u.isAnonymous ? { uid: u.uid, email: u.email, name: u.displayName } : null;
   }
 
   async signInWithGoogle() {
-    const u = await this.user();
-    const provider = new GoogleAuthProvider();
-    if (!u.isAnonymous) return;
-    try {
-      await linkWithPopup(u, provider);
-    } catch (e) {
-      if ((e as { code?: string }).code !== "auth/credential-already-in-use") throw e;
-      const anonymous = await this.exportAll();
-      await signInWithPopup(this.auth, provider);
-      this.ready = null;
-      if (anonymous.meals.length > 0) await mergeMeals(this, anonymous.meals);
-      if (anonymous.profile && !(await this.getProfile())) await this.saveProfile(anonymous.profile);
-    }
+    await signInWithPopup(this.auth, new GoogleAuthProvider());
   }
 
   async signOut() {
     await this.auth.signOut();
-    this.ready = null;
   }
 }

@@ -12,6 +12,8 @@
       "two": { "title": "Cada ingrediente, contado.", "body": "O Bites divide a refeição em partes que podes ajustar." },
       "three": { "title": "O teu dia num relance.", "body": "Um calendário que mostra como estás a correr." }
     },
+    "signIn": "Já tens conta? Entrar",
+    "google": { "cancelled": "O início de sessão foi cancelado. Tenta de novo quando quiseres.", "failed": "Não foi possível iniciar sessão agora. Tenta de novo." },
     "illustration": { "rice": "Arroz 150 g · 195 kcal", "chicken": "Frango 120 g · 198 kcal" },
     "page": "Página {{current}} de {{total}}",
     "step": "Pergunta {{current}} de {{total}}",
@@ -42,7 +44,7 @@
       "title": "O teu plano diário",
       "caption": "calorias por dia",
       "start": "Começar",
-      "saveWithGoogle": "Guardar com o Google",
+      "google": "Continuar com o Google",
       "footnote": "As estimativas da IA podem falhar 20–40%. Ajusta as porções para maior precisão.",
       "editTarget": "Calorias diárias"
     }
@@ -120,8 +122,7 @@
     "profile": "Perfil", "profileRedo": "Refazer as perguntas",
     "language": "Idioma", "languageSystem": "Sistema", "languagePt": "Português", "languageEn": "English",
     "units": "Unidades",
-    "account": "Conta", "signIn": "Iniciar sessão com o Google", "signOut": "Terminar sessão", "anonymous": "Anónimo",
-    "mergeTitle": "Iniciar sessão com o Google?", "mergeBody": "As refeições neste dispositivo serão juntadas à tua conta Google.", "mergeConfirm": "Continuar",
+    "account": "Conta", "signOut": "Terminar sessão",
     "exportCsv": "Exportar CSV", "exportJson": "Exportar JSON",
     "deleteAll": "Eliminar todos os dados",
     "deleteConfirmTitle": "Eliminar tudo?",
@@ -152,6 +153,7 @@
     "loggedAgain": "Registado de novo hoje",
     "exported": "Exportação pronta",
     "allDeleted": "Todos os dados eliminados",
-    "saved": "Guardado"
+    "saved": "Guardado",
+    "welcomeBack": "Bem-vindo de volta"
   }
 }

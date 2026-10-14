@@ -7,7 +7,7 @@ import Sheet from "../../components/Sheet";
 import { toast } from "../../components/Toast";
 import { applyProfileLocale } from "../../i18n";
 import { download, toCSV, toJSON } from "../../lib/export";
-import type { AccountInfo } from "../../lib/repo";
+import type { AuthUser } from "../../lib/repo";
 import { energyUnit, formatEnergy } from "../../lib/stats";
 import { useStore } from "../../store";
 
@@ -76,8 +76,7 @@ export default function SettingsSheet({ open, onClose, onRedo }: SettingsSheetPr
   const repo = useStore((s) => s.repo);
   const profile = useStore((s) => s.profile);
   const [confirmOpen, setConfirmOpen] = useState(false);
-  const [mergeOpen, setMergeOpen] = useState(false);
-  const [account, setAccount] = useState<AccountInfo | null>(null);
+  const [account, setAccount] = useState<AuthUser | null>(null);
   const [draft, setDraft] = useState("");
 
   const units = profile?.units ?? "kcal";
@@ -88,9 +87,9 @@ export default function SettingsSheet({ open, onClose, onRedo }: SettingsSheetPr
   }, [target, units]);
 
   useEffect(() => {
-    if (!open || !repo.getAccount) return;
+    if (!open || !repo.currentUser) return;
     let live = true;
-    void repo.getAccount().then((a) => live && setAccount(a)).catch(() => live && setAccount(null));
+    void repo.currentUser().then((a) => live && setAccount(a)).catch(() => live && setAccount(null));
     return () => {
       live = false;
     };
@@ -163,16 +162,17 @@ export default function SettingsSheet({ open, onClose, onRedo }: SettingsSheetPr
     toast(t("toasts.allDeleted"));
   };
 
-  const googleAction = async (action: "signInWithGoogle" | "signOut") => {
+  const signOut = async () => {
     try {
-      await repo[action]?.();
-      const store = useStore.getState();
-      store.setProfile(await repo.getProfile());
-      store.bump();
-      setAccount((await repo.getAccount?.()) ?? null);
-    } catch (e) {
-      if (!["auth/popup-closed-by-user", "auth/cancelled-popup-request"].includes((e as { code?: string })?.code ?? "")) toast(t("errors.generic"));
+      await repo.signOut?.();
+    } catch {
+      toast(t("errors.generic"));
+      return;
     }
+    onClose();
+    const store = useStore.getState();
+    store.setProfile(null);
+    store.bump();
   };
 
   return (
@@ -243,16 +243,13 @@ export default function SettingsSheet({ open, onClose, onRedo }: SettingsSheetPr
           {repo.kind !== "local" && (
             <Group title={t("settings.account")}>
               <div className={rowClass}>
-                <span className="min-w-0 truncate text-body">{account?.anonymous === false ? (account.email ?? t("settings.account")) : t("settings.anonymous")}</span>
-                {account?.anonymous === false ? (
-                  <button type="button" className="shrink-0 text-body font-semibold text-accent-text active:opacity-60" onClick={() => void googleAction("signOut")}>
-                    {t("settings.signOut")}
-                  </button>
-                ) : (
-                  <button type="button" className="shrink-0 text-body font-semibold text-accent-text active:opacity-60" onClick={() => setMergeOpen(true)}>
-                    {t("settings.signIn")}
-                  </button>
-                )}
+                <span className="min-w-0">
+                  <span className="block truncate text-body">{account?.name ?? account?.email ?? t("settings.account")}</span>
+                  {account?.name && account.email && <span className="block truncate text-subhead text-fg-2">{account.email}</span>}
+                </span>
+                <button type="button" className="shrink-0 text-body font-semibold text-accent-text active:opacity-60" onClick={() => void signOut()}>
+                  {t("settings.signOut")}
+                </button>
               </div>
             </Group>
           )}
@@ -274,27 +271,6 @@ export default function SettingsSheet({ open, onClose, onRedo }: SettingsSheetPr
             <p className="text-subhead tabular">{t("settings.version", { version: __APP_VERSION__ })}</p>
             <p className="mt-2 text-subhead text-fg-2">{t("settings.disclaimer")}</p>
           </section>
-        </div>
-      </Sheet>
-
-      <Sheet open={mergeOpen} onClose={() => setMergeOpen(false)}>
-        <div className="px-5 pb-6 text-center">
-          <h2 className="text-title">{t("settings.mergeTitle")}</h2>
-          <p className="mt-2 text-body text-fg-2">{t("settings.mergeBody")}</p>
-          <div className="mt-6 flex flex-col gap-2">
-            <PillButton
-              className="w-full"
-              onClick={() => {
-                setMergeOpen(false);
-                void googleAction("signInWithGoogle");
-              }}
-            >
-              {t("settings.mergeConfirm")}
-            </PillButton>
-            <PillButton variant="text" className="w-full" onClick={() => setMergeOpen(false)}>
-              {t("common.cancel")}
-            </PillButton>
-          </div>
         </div>
       </Sheet>
 

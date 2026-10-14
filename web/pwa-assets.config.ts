@@ -1,16 +1,9 @@
-import { combinePresetAndAppleSplashScreens, defineConfig, minimal2023Preset } from "@vite-pwa/assets-generator/config";
+import { defineConfig, minimal2023Preset } from "@vite-pwa/assets-generator/config";
 
+// iOS launch images (public/apple-splash-*.png) are plain background colours on purpose,
+// so only the in-app splash shows the logo; they are not generated here.
 export default defineConfig({
   headLinkOptions: { preset: "2023" },
-  preset: combinePresetAndAppleSplashScreens(
-    minimal2023Preset,
-    {
-      padding: 0.35,
-      resizeOptions: { background: "#FFFFFF", fit: "contain" },
-      darkResizeOptions: { background: "#000000", fit: "contain" },
-      linkMediaOptions: { log: true, addMediaScreen: true, basePath: "/", xhtml: false },
-    },
-    ["iPhone 16 Pro Max", "iPhone 16 Pro", "iPhone 16 Plus", "iPhone 16", "iPhone 14", "iPhone 13 mini"],
-  ),
+  preset: minimal2023Preset,
   images: ["public/logo-icon.svg"],
 });

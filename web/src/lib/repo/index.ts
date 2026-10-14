@@ -1,7 +1,7 @@
 import type { Repo } from "./types";
 import { LocalRepo } from "./local";
 
-export type { Repo, AccountInfo } from "./types";
+export type { Repo, AuthUser } from "./types";
 
 const forward =
   (load: () => Promise<Repo>, name: keyof Repo) =>
@@ -35,7 +35,7 @@ export function lazyRepo(load: () => Promise<Repo>): Repo {
     exportAll: call("exportAll") as Repo["exportAll"],
     clearAll: call("clearAll") as Repo["clearAll"],
     getIdToken: call("getIdToken") as Repo["getIdToken"],
-    getAccount: call("getAccount") as Repo["getAccount"],
+    currentUser: call("currentUser") as Repo["currentUser"],
     signInWithGoogle: call("signInWithGoogle") as Repo["signInWithGoogle"],
     signOut: call("signOut") as Repo["signOut"],
   };
