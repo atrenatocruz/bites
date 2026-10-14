@@ -41,8 +41,8 @@ export default function ItemEditor({ item, onGrams, onRemove }: ItemEditorProps)
         }}
       >
         <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-1.5">
-            <span className="truncate text-headline">{item.name}</span>
+          <div className="flex items-start gap-1.5">
+            <span className="break-words text-headline">{item.name}</span>
             {item.confidence < 0.5 && (
               <span
                 role="img"
@@ -54,7 +54,7 @@ export default function ItemEditor({ item, onGrams, onRemove }: ItemEditorProps)
               </span>
             )}
           </div>
-          {item.assumption && <div className="truncate text-caption">{item.assumption}</div>}
+          {item.assumption && <div className="break-words text-caption">{item.assumption}</div>}
         </div>
         <div className="flex items-center gap-1.5">
           <button type="button" className={stepButton} aria-label={`${label} −${STEP}`} onClick={() => step(-STEP)}>

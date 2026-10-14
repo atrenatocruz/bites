@@ -1,5 +1,5 @@
 import { useEffect, useRef, type ReactNode } from "react";
-import { AnimatePresence, motion, useDragControls, useReducedMotion } from "framer-motion";
+import { AnimatePresence, animate, motion, useDragControls, useMotionValue, useReducedMotion } from "framer-motion";
 import { useTranslation } from "react-i18next";
 
 interface SheetProps {
@@ -20,6 +20,8 @@ export default function Sheet({ open, onClose, children, snap = "auto" }: SheetP
   const pressAt = useRef<{ x: number; y: number } | null>(null);
   const dragged = useRef(false);
   const dialog = useRef<HTMLDivElement>(null);
+  const scroller = useRef<HTMLDivElement>(null);
+  const y = useMotionValue(0);
   const close = useRef(onClose);
   close.current = onClose;
 
@@ -43,12 +45,49 @@ export default function Sheet({ open, onClose, children, snap = "auto" }: SheetP
     };
   }, [open]);
 
+  // In a standalone PWA there is no browser chrome, so pulling down on the content at the top closes the sheet.
+  useEffect(() => {
+    const el = scroller.current;
+    if (!open || !el) return;
+    let startY = 0;
+    let pulling = false;
+    const onStart = (e: TouchEvent) => {
+      startY = e.touches[0]!.clientY;
+      pulling = false;
+    };
+    const onMove = (e: TouchEvent) => {
+      const dy = e.touches[0]!.clientY - startY;
+      if (!pulling) {
+        if (el.scrollTop > 0 || dy <= 6) return;
+        pulling = true;
+      }
+      if (e.cancelable) e.preventDefault();
+      y.set(Math.max(0, dy - 6) * 0.8);
+    };
+    const onEnd = () => {
+      if (!pulling) return;
+      pulling = false;
+      if (y.get() > 100) close.current();
+      else void animate(y, 0, SPRING);
+    };
+    el.addEventListener("touchstart", onStart, { passive: true });
+    el.addEventListener("touchmove", onMove, { passive: false });
+    el.addEventListener("touchend", onEnd);
+    el.addEventListener("touchcancel", onEnd);
+    return () => {
+      el.removeEventListener("touchstart", onStart);
+      el.removeEventListener("touchmove", onMove);
+      el.removeEventListener("touchend", onEnd);
+      el.removeEventListener("touchcancel", onEnd);
+    };
+  }, [open, y]);
+
   return (
     <AnimatePresence>
       {open && (
-        <div className="fixed inset-0 z-40">
+        <div className="fixed inset-0 z-40 overscroll-none">
           <motion.div
-            className="absolute inset-0 bg-black/40"
+            className="absolute inset-0 touch-none bg-black/40"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -61,6 +100,7 @@ export default function Sheet({ open, onClose, children, snap = "auto" }: SheetP
             aria-modal="true"
             tabIndex={-1}
             className={`absolute outline-none inset-x-0 bottom-0 flex flex-col rounded-t-sheet bg-bg pb-[env(safe-area-inset-bottom)] shadow-[0_-8px_40px_rgba(0,0,0,0.12)] ${snap === "full" ? "h-[calc(100%-env(safe-area-inset-top)-16px)]" : "max-h-[92%]"}`}
+            style={{ y }}
             initial={reduce ? { opacity: 0 } : { y: "100%" }}
             animate={reduce ? { opacity: 1 } : { y: 0 }}
             exit={reduce ? { opacity: 0 } : { y: "100%" }}
@@ -102,7 +142,7 @@ export default function Sheet({ open, onClose, children, snap = "auto" }: SheetP
                 <span className="mx-auto mt-2 block h-1 w-9 rounded-full bg-sep" />
               </button>
             </div>
-            <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">{children}</div>
+            <div ref={scroller} className="min-h-0 flex-1 overflow-y-auto overscroll-contain">{children}</div>
           </motion.div>
         </div>
       )}

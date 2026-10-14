@@ -134,7 +134,7 @@ export default function ResultSheet({ open, result, source, thumb, hint, onClose
       <Sheet open={open} onClose={onClose}>
         <div className="flex flex-col pt-2">
           <div className="flex items-center justify-between gap-3 px-5">
-            <h2 className="min-w-0 truncate text-title">{current.title}</h2>
+            <h2 className="min-w-0 break-words text-title">{current.title}</h2>
             <button
               type="button"
               onClick={cycleMeal}
