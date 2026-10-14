@@ -59,8 +59,9 @@ export class FirebaseRepo implements Repo {
 
   private async user(): Promise<User> {
     await this.auth.authStateReady();
-    if (!this.auth.currentUser) throw new Error("not_signed_in");
-    return this.auth.currentUser;
+    const u = this.auth.currentUser;
+    if (!u || u.isAnonymous) throw new Error("not_signed_in");
+    return u;
   }
 
   private async refs() {
@@ -192,13 +193,15 @@ export class FirebaseRepo implements Repo {
 
   async getIdToken() {
     await this.auth.authStateReady();
-    return (await this.auth.currentUser?.getIdToken()) ?? null;
+    const u = this.auth.currentUser;
+    return u && !u.isAnonymous ? await u.getIdToken() : null;
   }
 
   async currentUser(): Promise<AuthUser | null> {
     await this.auth.authStateReady();
     const u = this.auth.currentUser;
-    return u ? { uid: u.uid, email: u.email, name: u.displayName } : null;
+    // Sessions left over from the old anonymous mode must sign in with Google like everyone else.
+    return u && !u.isAnonymous ? { uid: u.uid, email: u.email, name: u.displayName } : null;
   }
 
   async signInWithGoogle() {
