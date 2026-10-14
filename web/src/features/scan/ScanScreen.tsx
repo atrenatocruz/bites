@@ -200,7 +200,7 @@ export default function ScanScreen() {
       )}
 
       {phase === "live" && !fallback && (
-        <div className="absolute inset-x-0 bottom-0 flex flex-col items-center gap-4 bg-gradient-to-t from-black/60 to-transparent px-5 pb-8 pt-16">
+        <div className="absolute inset-x-0 bottom-0 flex flex-col items-center gap-4 bg-gradient-to-t from-black/60 to-transparent px-5 pb-[calc(var(--island-clearance)+4px)] pt-16">
           <p className="text-center text-subhead text-white/90">{t("scan.scaleHint")}</p>
           {detailOpen ? (
             <input
@@ -250,7 +250,7 @@ export default function ScanScreen() {
       {phase === "analyzing" && hasFrame && (
         <div className="absolute inset-0 overflow-hidden" role="status" aria-live="polite">
           <div className="shimmer absolute inset-0" />
-          <div className="absolute inset-x-0 bottom-10 flex justify-center px-5">
+          <div className="absolute inset-x-0 bottom-[calc(var(--island-clearance)+8px)] flex justify-center px-5">
             <Analyzing className="rounded-card bg-black/60 px-7 py-5 text-white backdrop-blur-md" />
           </div>
         </div>
@@ -262,7 +262,7 @@ export default function ScanScreen() {
       )}
 
       {phase === "error" && (
-        <div className={`absolute inset-0 flex items-end justify-center px-5 pb-8 ${frame || status === "ready" ? "bg-black/50" : "bg-bg"}`}>
+        <div className={`absolute inset-0 flex items-end justify-center px-5 pb-[calc(var(--island-clearance)+4px)] ${frame || status === "ready" ? "bg-black/50" : "bg-bg"}`}>
           <div role="alert" className="w-full max-w-sm rounded-card bg-bg p-6 text-center text-fg shadow-xl">
             <h2 className="text-title">{errorTitle ?? t("scan.errorTitle")}</h2>
             <p className="mt-2 text-subhead text-fg-2">{errorBody}</p>

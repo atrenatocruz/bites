@@ -132,7 +132,7 @@
     "android": { "menu": "Tap the menu in your browser", "add": "Choose Install app or Add to Home screen" },
     "ios": { "share": "Tap the Share button in Safari", "add": "Scroll down and tap Add to Home Screen", "confirm": "Tap Add, then open Bites from your home screen" }
   },
-  "tabs": { "history": "History", "scan": "Scan", "diary": "Diary" },
+  "tabs": { "label": "Main", "history": "History", "scan": "Scan", "diary": "Diary" },
   "scan": {
     "scaleHint": "Include a fork or your hand for scale.",
     "gallery": "Gallery", "type": "Type", "shutter": "Take photo",

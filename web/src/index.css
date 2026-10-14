@@ -134,6 +134,92 @@ input[type="search"]::-webkit-search-cancel-button {
   display: none;
 }
 
+/* Liquid Glass: a translucent, refracting material for floating chrome. */
+:root {
+  --island-clearance: calc(max(env(safe-area-inset-bottom), 12px) + 84px);
+  --glass-fill: linear-gradient(180deg, rgba(255, 255, 255, 0.62), rgba(255, 255, 255, 0.34));
+  --glass-edge: rgba(255, 255, 255, 0.7);
+  --glass-edge-soft: rgba(255, 255, 255, 0.18);
+  --glass-shadow: rgba(20, 20, 30, 0.2);
+  --lens-fill: linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.6));
+  --lens-shadow: rgba(20, 20, 30, 0.16);
+  --lens-accent: linear-gradient(180deg, rgba(255, 90, 31, 0.3), rgba(255, 90, 31, 0.16));
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --glass-fill: linear-gradient(180deg, rgba(70, 70, 76, 0.5), rgba(34, 34, 38, 0.36));
+    --glass-edge: rgba(255, 255, 255, 0.26);
+    --glass-edge-soft: rgba(255, 255, 255, 0.06);
+    --glass-shadow: rgba(0, 0, 0, 0.5);
+    --lens-fill: linear-gradient(180deg, rgba(255, 255, 255, 0.28), rgba(255, 255, 255, 0.12));
+    --lens-shadow: rgba(0, 0, 0, 0.35);
+    --lens-accent: linear-gradient(180deg, rgba(255, 106, 51, 0.42), rgba(255, 106, 51, 0.22));
+  }
+}
+
+.glass-island {
+  position: relative;
+  background: var(--glass-fill);
+  -webkit-backdrop-filter: blur(28px) saturate(190%) brightness(1.04);
+  backdrop-filter: blur(28px) saturate(190%) brightness(1.04);
+  box-shadow:
+    inset 0 1px 0.5px var(--glass-edge),
+    inset 0 -1px 0.5px var(--glass-edge-soft),
+    inset 0 0 0 1px var(--glass-edge-soft),
+    0 12px 32px var(--glass-shadow),
+    0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+/* A soft sheen across the top, the way light catches curved glass. */
+.glass-island::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: radial-gradient(120% 90% at 50% -30%, rgba(255, 255, 255, 0.45), transparent 60%);
+  mix-blend-mode: soft-light;
+}
+
+.glass-lens {
+  background: var(--lens-fill);
+  box-shadow:
+    inset 0 1px 0.5px rgba(255, 255, 255, 0.9),
+    inset 0 -1px 1px rgba(255, 255, 255, 0.25),
+    0 3px 10px var(--lens-shadow);
+}
+.glass-lens--accent {
+  background: var(--lens-accent);
+  box-shadow:
+    inset 0 1px 0.5px rgba(255, 255, 255, 0.55),
+    inset 0 -1px 1px rgba(255, 255, 255, 0.12),
+    0 3px 12px rgba(255, 90, 31, 0.28);
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .glass-island {
+    background: var(--bg-elevated);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+  .glass-island::before {
+    display: none;
+  }
+  .glass-lens {
+    background: var(--bg);
+  }
+}
+
+@media (prefers-contrast: more) {
+  .glass-island {
+    background: var(--bg-elevated);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    box-shadow: inset 0 0 0 1.5px var(--fg-secondary), 0 8px 24px var(--glass-shadow);
+  }
+}
+
 :focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;

@@ -87,7 +87,7 @@ function Shell() {
           <motion.section
             key={tab}
             className={
-              tab === "scan" ? "absolute inset-0" : `absolute inset-0 flex overflow-y-auto px-5 ${online ? "pt-[env(safe-area-inset-top)]" : ""}`
+              tab === "scan" ? "absolute inset-0" : `absolute inset-0 flex overflow-y-auto px-5 pb-[var(--island-clearance)] ${online ? "pt-[env(safe-area-inset-top)]" : ""}`
             }
             initial={{ opacity: 0, y: reduce ? 0 : 6 }}
             animate={{ opacity: 1, y: 0 }}

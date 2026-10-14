@@ -132,7 +132,7 @@
     "android": { "menu": "Toca no menu do navegador", "add": "Escolhe Instalar app ou Adicionar ao ecrã principal" },
     "ios": { "share": "Toca no botão Partilhar no Safari", "add": "Desce e toca em Adicionar ao Ecrã Principal", "confirm": "Toca em Adicionar e abre o Bites a partir do ecrã principal" }
   },
-  "tabs": { "history": "Histórico", "scan": "Scan", "diary": "Diário" },
+  "tabs": { "label": "Principal", "history": "Histórico", "scan": "Scan", "diary": "Diário" },
   "scan": {
     "scaleHint": "Inclui um garfo ou a tua mão para dar escala.",
     "gallery": "Galeria", "type": "Escrever", "shutter": "Tirar fotografia",
