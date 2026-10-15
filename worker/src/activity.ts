@@ -146,14 +146,19 @@ export async function handleSync(req: Request, env: Env, deps: ActivityDeps): Pr
   const now = deps.now();
   if (!(await checkAndCount(env.RATE_KV, uid, `act-${now.toISOString().slice(0, 13)}`, SYNCS_PER_HOUR))) return json(RATE_LIMITED, 429);
 
+  // Keep the last rejected body for a day: the only way to see what a hand-built Shortcut actually sends.
+  const rejected = async () => {
+    await env.RATE_KV.put(`actdebug:${uid}`, text, { expirationTtl: 86_400 }).catch(() => {});
+    return json(BAD_REQUEST, 400);
+  };
   let body: unknown;
   try {
     body = JSON.parse(text);
   } catch {
-    return json(BAD_REQUEST, 400);
+    return rejected();
   }
   const parsed = parseSync(body, now);
-  if (!parsed) return json(BAD_REQUEST, 400);
+  if (!parsed) return rejected();
 
   const byMonth = new Map<string, [string, HealthDay][]>();
   for (const entry of parsed.days) byMonth.set(entry[0].slice(0, 7), [...(byMonth.get(entry[0].slice(0, 7)) ?? []), entry]);
@@ -218,6 +223,7 @@ export async function handleDeleteActivity(req: Request, env: Env, deps: Activit
   const uid = await deps.verifyRequest(req, env);
   if (!uid) return json({ error: "unauthorized" }, 401);
   await removeKey(env.RATE_KV, uid);
+  await env.RATE_KV.delete(`actdebug:${uid}`);
   let cursor: string | undefined;
   do {
     const page = await env.RATE_KV.list({ prefix: `activity:${uid}:`, cursor });

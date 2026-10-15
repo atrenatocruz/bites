@@ -183,6 +183,7 @@ describe("read and delete", () => {
   it("deletes the key and all of that person's activity, and nobody else's", async () => {
     const { store, env, deps } = setup();
     seed(store);
+    store.set("actdebug:u1", "raw");
     await handleCreateKey(req("/api/activity/key", { method: "POST" }), env, deps);
     const res = await handleDeleteActivity(req("/api/activity", { method: "DELETE" }), env, deps);
     expect(res.status).toBe(200);
@@ -279,5 +280,17 @@ describe("read: strict dates", () => {
     expect((await handleGetActivity(req("/api/activity?from=0000-01-01&to=9999-99-99"), env, deps)).status).toBe(400);
     expect((await handleGetActivity(req("/api/activity?from=2026-02-30&to=2026-03-01"), env, deps)).status).toBe(400);
     expect(reads).toBe(0);
+  });
+});
+
+describe("sync: diagnostics", () => {
+  it("keeps the last rejected body for a day so a broken Shortcut can be diagnosed", async () => {
+    const s = setup();
+    const { key } = (await (await handleCreateKey(req("/api/activity/key", { method: "POST" }), s.env, s.deps)).json()) as { key: string };
+    const send = (body: string) => handleSync(req("/api/activity/sync", { method: "POST", headers: { authorization: `Bearer ${key}` }, body }), s.env, s.deps);
+    await send('{"days":"weird"}');
+    expect(s.store.get("actdebug:u1")).toBe('{"days":"weird"}');
+    await send("not json");
+    expect(s.store.get("actdebug:u1")).toBe("not json");
   });
 });
