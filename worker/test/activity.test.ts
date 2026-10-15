@@ -294,3 +294,29 @@ describe("sync: diagnostics", () => {
     expect(s.store.get("actdebug:u1")).toBe("not json");
   });
 });
+
+describe("sync: list sent as text", () => {
+  it("accepts days sent as one text with a day per line, as Shortcuts does when the row type is Text", async () => {
+    const s = setup();
+    const { key } = (await (await handleCreateKey(req("/api/activity/key", { method: "POST" }), s.env, s.deps)).json()) as { key: string };
+    const lines = [
+      { workouts: [], restingKcal: 0, day: "2026-10-14", activeKcal: 0 },
+      { workouts: [], restingKcal: 1598, day: "2026-10-13", activeKcal: 188 },
+      { workouts: [], restingKcal: 529, day: "2026-10-12", activeKcal: 0 },
+    ].map((d) => JSON.stringify(d)).join("\n");
+    const res = await handleSync(req("/api/activity/sync", { method: "POST", headers: { authorization: `Bearer ${key}` }, body: JSON.stringify({ days: lines }) }), s.env, s.deps);
+    expect(res.status).toBe(200);
+    const days = JSON.parse(s.store.get("activity:u1:2026-10")!).days;
+    expect(days["2026-10-13"]).toEqual({ restingKcal: 1598, activeKcal: 188, workouts: [] });
+    expect(days["2026-10-12"]).toEqual({ restingKcal: 529, activeKcal: 0, workouts: [] });
+    expect(days["2026-10-14"]).toBeUndefined();
+  });
+
+  it("also accepts a list sent as JSON text", async () => {
+    const s = setup();
+    const { key } = (await (await handleCreateKey(req("/api/activity/key", { method: "POST" }), s.env, s.deps)).json()) as { key: string };
+    const days = JSON.stringify([{ day: "2026-10-13", restingKcal: 1598, activeKcal: 188 }]);
+    const res = await handleSync(req("/api/activity/sync", { method: "POST", headers: { authorization: `Bearer ${key}` }, body: JSON.stringify({ days }) }), s.env, s.deps);
+    expect(res.status).toBe(200);
+  });
+});

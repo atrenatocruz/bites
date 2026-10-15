@@ -109,10 +109,27 @@ function validTz(tz: unknown): string {
 /** Health sums to 0 when it has no samples, so 0 resting energy means "not measured" (no Apple Watch). */
 const isEmpty = (d: HealthDay) => d.restingKcal === null && !d.activeKcal && d.workouts.length === 0;
 
+/**
+ * Shortcuts turns a list into text when the Dictionary row type is Text: one JSON object per line.
+ * Accept that and a JSON array sent as text, so a Shortcut built either way works.
+ */
+function asList(v: unknown): unknown {
+  if (typeof v !== "string") return v;
+  const t = v.trim();
+  if (t === "") return [];
+  try {
+    if (t.startsWith("[")) return JSON.parse(t);
+    return t.split("\n").filter((line) => line.trim() !== "").map((line) => JSON.parse(line));
+  } catch {
+    return v;
+  }
+}
+
 /** `days` holds only days with data; `received` counts every day sent. */
 export function parseSync(body: unknown, now: Date): { tz: string; days: [string, HealthDay][]; received: number } | null {
   if (!body || typeof body !== "object") return null;
-  const { tz, days } = body as { tz?: unknown; days?: unknown };
+  const { tz } = body as { tz?: unknown };
+  const days = asList((body as { days?: unknown }).days);
   if (!Array.isArray(days) || days.length === 0 || days.length > MAX_DAYS) return null;
   const oldest = dayKey(new Date(now.getTime() - 10 * 86_400_000));
   const newest = dayKey(new Date(now.getTime() + 86_400_000));
@@ -124,7 +141,7 @@ export function parseSync(body: unknown, now: Date): { tz: string; days: [string
     const restingKcal = energy(o.restingKcal, 20_000);
     const activeKcal = energy(o.activeKcal, 20_000);
     if (restingKcal === undefined || activeKcal === undefined) return null;
-    const list = o.workouts ?? [];
+    const list = asList(o.workouts) ?? [];
     if (!Array.isArray(list) || list.length > MAX_WORKOUTS) return null;
     const workouts = list.map(parseWorkout);
     if (workouts.some((w) => w === undefined)) return null;
